@@ -1,5 +1,6 @@
 using UnityEngine;
 using static PlacementModus;
+using UnityEngine.EventSystems;
 
 public class BuildManager : MonoBehaviour
 {
@@ -30,15 +31,39 @@ public class BuildManager : MonoBehaviour
 
     private bool canPlace;
 
+    private bool buildModeActive = false;
+
     private GameObject previewObject;
     private float currentRotation;
     private SnapPoint currentTargetSnap;
 
 
 
+    public void SetBuildModeActive(bool active)
+    {
+        buildModeActive = active;
+
+        if (!buildModeActive && previewObject != null)
+        {
+            Destroy(previewObject);
+            previewObject = null;
+        }
+    }
+
     void Update()
     {
         HandleSelection();
+
+        if (!buildModeActive)
+        {
+            if (previewObject != null)
+            {
+                Destroy(previewObject);
+                previewObject = null;
+            }
+
+            return;
+        }
 
         if (CurrentPrefab == null)
             return;
@@ -49,10 +74,10 @@ public class BuildManager : MonoBehaviour
         HandleRotation();
         UpdatePreviewPosition();
         CheckCollision();
-        
 
         if (Input.GetMouseButtonDown(0))
             PlaceObject();
+
         if (Input.GetMouseButtonDown(1))
             DeleteObject();
     }
@@ -69,12 +94,14 @@ public class BuildManager : MonoBehaviour
             SelectPrefab(2);
     }
 
-    void SelectPrefab(int index)
+    public void SelectPrefab(int index)
     {
         if (index >= buildPrefabs.Length)
             return;
 
         selectedPrefabIndex = index;
+
+        buildModeActive = true;
 
         if (previewObject != null)
             Destroy(previewObject);
@@ -241,6 +268,8 @@ public class BuildManager : MonoBehaviour
 
     void PlaceObject()
     {
+        if (UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject())
+            return;
         if (previewObject == null || !previewObject.activeSelf)
             return;
 
