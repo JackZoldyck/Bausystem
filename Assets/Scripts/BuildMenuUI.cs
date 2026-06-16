@@ -9,11 +9,27 @@ public class BuildMenuUI : MonoBehaviour
         buildMenuPanel.SetActive(false);
     }
 
+    public MonoBehaviour mouseLookScript;
+
     void Update()
     {
         if (Input.GetKeyDown(KeyCode.B))
         {
-            buildMenuPanel.SetActive(!buildMenuPanel.activeSelf);
+            bool active = !buildMenuPanel.activeSelf;
+
+            buildMenuPanel.SetActive(active);
+
+            Cursor.visible = active;
+            Cursor.lockState = active ? CursorLockMode.None : CursorLockMode.Locked;
+
+            if (mouseLookScript != null)
+                mouseLookScript.enabled = !active;
         }
+    }
+    public void CloseMenu()
+    {
+        buildMenuPanel.SetActive(false);
+        Cursor.visible = false;
+        Cursor.lockState = CursorLockMode.Locked;
     }
 }

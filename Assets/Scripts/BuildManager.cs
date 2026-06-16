@@ -52,7 +52,7 @@ public class BuildManager : MonoBehaviour
 
     void Update()
     {
-        HandleSelection();
+       // HandleSelection();
 
         if (!buildModeActive)
         {
@@ -224,7 +224,7 @@ public class BuildManager : MonoBehaviour
                 currentTargetSnap = nearbySnap;
 
                 previewObject.transform.position =
-                    GetPositionWithBottomSnap(nearbySnap.transform.position);
+                    GetPositionWithMatchingSnap(nearbySnap);
             }
             else
             {
@@ -291,6 +291,39 @@ public class BuildManager : MonoBehaviour
     {
         foreach (Collider col in obj.GetComponentsInChildren<Collider>())
             col.enabled = false;
+    }
+    SnapPoint FindMatchingSnapPoint(SnapPoint targetSnap)
+    {
+        BuildableObject buildable = previewObject.GetComponent<BuildableObject>();
+
+        if (buildable == null || buildable.snapPoints == null)
+            return null;
+
+        foreach (SnapPoint ownSnap in buildable.snapPoints)
+        {
+            {
+                foreach (string compatibleType in ownSnap.compatibleSnapTypes)
+                {
+                    if (compatibleType == targetSnap.snapType)
+                    {
+                        return ownSnap;
+                    }
+                }
+            }
+        }
+
+        return null;
+    }
+    Vector3 GetPositionWithMatchingSnap(SnapPoint targetSnap)
+    {
+        SnapPoint ownSnap = FindMatchingSnapPoint(targetSnap);
+
+        if (ownSnap == null)
+            return targetSnap.transform.position;
+
+        Vector3 offset = previewObject.transform.position - ownSnap.transform.position;
+
+        return targetSnap.transform.position + offset;
     }
 
 }

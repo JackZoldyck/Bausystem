@@ -45,6 +45,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SnapPoint
   snapType: 
+  compatibleSnapTypes: []
   occupied: 0
 --- !u!1 &3806273875322997710
 GameObject:
@@ -91,7 +92,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6750b0bd0774b6b4794d43c5ad78cc93, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SnapPoint
-  snapType: 
+  snapType: WallBottom
+  compatibleSnapTypes:
+  - WallTop
+  - FloorLeft
+  - FloorRight
+  - FloorFront
+  - FloorBack
   occupied: 0
 --- !u!135 &1792651189000278195
 SphereCollider:
@@ -159,7 +166,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6750b0bd0774b6b4794d43c5ad78cc93, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SnapPoint
-  snapType: 
+  snapType: WallTop
+  compatibleSnapTypes: []
   occupied: 0
 --- !u!135 &2721797966623903179
 SphereCollider:
@@ -227,6 +235,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SnapPoint
   snapType: 
+  compatibleSnapTypes: []
   occupied: 0
 --- !u!1 &6341907682007455158
 GameObject:
@@ -273,6 +282,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SnapPoint
   snapType: 
+  compatibleSnapTypes: []
   occupied: 0
 --- !u!1 &6486741913973026111
 GameObject:
@@ -319,6 +329,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SnapPoint
   snapType: 
+  compatibleSnapTypes: []
   occupied: 0
 --- !u!1 &9064331556145936708
 GameObject:
@@ -458,3 +469,4 @@ MonoBehaviour:
   - {fileID: 5883266935640882567}
   - {fileID: 502552285165724622}
   bottomSnap: {fileID: 5231203631692553321}
+  placementCheckCollider: {fileID: 0}
