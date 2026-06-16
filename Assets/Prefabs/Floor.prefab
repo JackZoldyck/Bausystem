@@ -118,6 +118,75 @@ MonoBehaviour:
   snapType: 
   compatibleSnapTypes: []
   occupied: 0
+--- !u!1 &4893425945617852165
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7529347645701875654}
+  - component: {fileID: 2310536282857534665}
+  - component: {fileID: 7514457485574809693}
+  m_Layer: 13
+  m_Name: BottomSnap
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7529347645701875654
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4893425945617852165}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: -0.5, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 3612421550417675845}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!135 &2310536282857534665
+SphereCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4893425945617852165}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Radius: 0.2
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &7514457485574809693
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4893425945617852165}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6750b0bd0774b6b4794d43c5ad78cc93, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SnapPoint
+  snapType: FloorBottom
+  compatibleSnapTypes: []
+  occupied: 0
 --- !u!1 &5551505062516953512
 GameObject:
   m_ObjectHideFlags: 0
@@ -301,6 +370,7 @@ Transform:
   - {fileID: 6728980345291866027}
   - {fileID: 961687057672107898}
   - {fileID: 5650577820074081187}
+  - {fileID: 7529347645701875654}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &1458638789199090225
@@ -394,11 +464,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BuildableObject
   snapPoints:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  bottomSnap: {fileID: 0}
+  - {fileID: 6535220977074206179}
+  - {fileID: 7828296010939156723}
+  - {fileID: 8215680969000426532}
+  - {fileID: 8402188654025885143}
+  - {fileID: 5137597291257380072}
+  - {fileID: 6591157303186899121}
+  - {fileID: 4283418395628208833}
+  - {fileID: 5465332939206157556}
+  bottomSnap: {fileID: 7529347645701875654}
   placementCheckCollider: {fileID: 0}
 --- !u!1 &6731036484200803939
 GameObject:

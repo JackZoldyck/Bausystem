@@ -217,7 +217,56 @@ public class BuildManager : MonoBehaviour
             Vector3 freePosition = GetPositionWithBottomSnap(hit.point);
 
 
-            SnapPoint nearbySnap = FindNearbySnapPoint(freePosition);
+            SnapPoint nearbySnap = FindNearbySnapPointNearOwnSnaps();
+
+            SnapPoint FindNearbySnapPointNearOwnSnaps()
+            {
+                BuildableObject buildable = previewObject.GetComponent<BuildableObject>();
+
+                if (buildable == null || buildable.snapPoints == null)
+                    return null;
+
+                SnapPoint closestSnap = null;
+                float closestDistance = autoSnapRange;
+
+                foreach (SnapPoint ownSnap in buildable.snapPoints)
+                {
+                    Collider[] colliders = Physics.OverlapSphere(
+                        ownSnap.transform.position,
+                        autoSnapRange,
+                        buildableMask
+                    );
+
+                    foreach (Collider col in colliders)
+                    {
+                        SnapPoint targetSnap = col.GetComponentInParent<SnapPoint>();
+
+                        if (targetSnap == null || targetSnap.occupied)
+                            continue;
+
+                        if (targetSnap.transform.IsChildOf(previewObject.transform))
+                            continue;
+
+                        SnapPoint matchingOwnSnap = FindMatchingSnapPoint(targetSnap);
+
+                        if (matchingOwnSnap != ownSnap)
+                            continue;
+
+                        float distance = Vector3.Distance(
+                            ownSnap.transform.position,
+                            targetSnap.transform.position
+                        );
+
+                        if (distance < closestDistance)
+                        {
+                            closestDistance = distance;
+                            closestSnap = targetSnap;
+                        }
+                    }
+                }
+
+                return closestSnap;
+            }
 
             if (nearbySnap != null && !nearbySnap.occupied)
             {
