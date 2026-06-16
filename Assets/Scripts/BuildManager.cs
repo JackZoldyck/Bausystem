@@ -258,7 +258,12 @@ public class BuildManager : MonoBehaviour
                 SnapPoint snap = col.GetComponentInParent<SnapPoint>();
 
                 if (snap != null && !snap.occupied)
+                {
+                    Debug.Log("Nearby Snap gefunden: " + snap.name +
+                              " | Type: " + snap.snapType);
+
                     return snap;
+                }
             }
 
             return null;
@@ -306,6 +311,9 @@ public class BuildManager : MonoBehaviour
                 {
                     if (compatibleType == targetSnap.snapType)
                     {
+                        Debug.Log("Matching Snap gefunden: " + ownSnap.name +
+                        " passt zu " + targetSnap.snapType);
+
                         return ownSnap;
                     }
                 }
