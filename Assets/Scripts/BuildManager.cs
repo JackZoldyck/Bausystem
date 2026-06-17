@@ -117,6 +117,16 @@ public class BuildManager : MonoBehaviour
 
             if (buildable != null)
             {
+                BuildSupport[] allSupports = FindObjectsOfType<BuildSupport>();
+
+                foreach (BuildSupport support in allSupports)
+                {
+                    if (support.supportedBy == buildable)
+                    {
+                        support.RemoveSupport();
+                    }
+                }
+
                 Destroy(buildable.gameObject);
             }
         }
@@ -216,6 +226,7 @@ public class BuildManager : MonoBehaviour
 
             Vector3 freePosition = GetPositionWithBottomSnap(hit.point);
 
+            previewObject.transform.position = freePosition;
 
             SnapPoint nearbySnap = FindNearbySnapPointNearOwnSnaps();
 
@@ -330,7 +341,21 @@ public class BuildManager : MonoBehaviour
         if (!canPlace)
             return;
 
-        Instantiate(CurrentPrefab, previewObject.transform.position, previewObject.transform.rotation);
+        GameObject placedObject = Instantiate(
+            CurrentPrefab,
+            previewObject.transform.position,
+            previewObject.transform.rotation
+        );
+
+        BuildSupport buildSupport = placedObject.GetComponent<BuildSupport>();
+
+        if (buildSupport != null && currentTargetSnap != null)
+        {
+            BuildableObject supportObject =
+                currentTargetSnap.GetComponentInParent<BuildableObject>();
+
+            buildSupport.SetSupport(supportObject);
+        }
     }
 
     void HandleRotation()

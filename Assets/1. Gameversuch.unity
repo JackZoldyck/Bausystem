@@ -1299,8 +1299,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   controller: {fileID: 1598376902}
   cameraTransform: {fileID: 1959882678}
-  moveSpeed: 5
+  walkSpeed: 5
+  sprintSpeed: 8
+  gravity: -9.81
   mouseSensitivity: 25
+  jumpHeight: 1.5
 --- !u!136 &1598376904
 CapsuleCollider:
   m_ObjectHideFlags: 0
