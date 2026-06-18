@@ -28,6 +28,10 @@ public class BuildManager : MonoBehaviour
     public Material validPreviewMaterial;
     public Material invalidPreviewMaterial;
     public LayerMask collisionMask;
+    public UIMessage uiMessage;
+    public InventoryUI inventoryUI;
+
+    public bool showSnapDebug = false;
 
     private bool canPlace;
 
@@ -36,8 +40,15 @@ public class BuildManager : MonoBehaviour
     private GameObject previewObject;
     private float currentRotation;
     private SnapPoint currentTargetSnap;
+    private PlayerInventory inventory;
 
 
+
+
+    void Start()
+    {
+        inventory = FindFirstObjectByType<PlayerInventory>();
+    }
 
     public void SetBuildModeActive(bool active)
     {
@@ -319,8 +330,11 @@ public class BuildManager : MonoBehaviour
 
                 if (snap != null && !snap.occupied)
                 {
-                    Debug.Log("Nearby Snap gefunden: " + snap.name +
-                              " | Type: " + snap.snapType);
+                    if (showSnapDebug)
+                    {
+                        Debug.Log("Nearby Snap gefunden: " + snap.name +
+                                  " | Type: " + snap.snapType);
+                    }
 
                     return snap;
                 }
@@ -333,19 +347,42 @@ public class BuildManager : MonoBehaviour
 
     void PlaceObject()
     {
+
+
         if (UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject())
             return;
+
         if (previewObject == null || !previewObject.activeSelf)
             return;
 
         if (!canPlace)
             return;
 
+        BuildCost cost = CurrentPrefab.GetComponent<BuildCost>();
+
+        if (cost != null)
+        {
+            if (inventory.wood < cost.woodCost)
+            {
+                uiMessage.ShowMessage("MATERIAL MISSING");
+                return;
+            }
+        }
         GameObject placedObject = Instantiate(
             CurrentPrefab,
             previewObject.transform.position,
             previewObject.transform.rotation
         );
+
+        if (cost != null)
+        {
+            inventory.wood -= cost.woodCost;
+
+            if (inventoryUI != null)
+                inventoryUI.UpdateUI();
+
+            Debug.Log("Holz übrig: " + inventory.wood);
+        }
 
         BuildSupport buildSupport = placedObject.GetComponent<BuildSupport>();
 
@@ -385,8 +422,11 @@ public class BuildManager : MonoBehaviour
                 {
                     if (compatibleType == targetSnap.snapType)
                     {
-                        Debug.Log("Matching Snap gefunden: " + ownSnap.name +
-                        " passt zu " + targetSnap.snapType);
+                        if (showSnapDebug)
+                        {
+                            Debug.Log("Matching Snap gefunden: " + ownSnap.name +
+                                      " passt zu " + targetSnap.snapType);
+                        }
 
                         return ownSnap;
                     }

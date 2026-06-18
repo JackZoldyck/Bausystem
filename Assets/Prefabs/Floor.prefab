@@ -342,6 +342,7 @@ GameObject:
   - component: {fileID: 1765326665464848603}
   - component: {fileID: 2510655955238660859}
   - component: {fileID: 889074639383006470}
+  - component: {fileID: 3754587980306736617}
   m_Layer: 13
   m_Name: Floor
   m_TagString: Untagged
@@ -474,6 +475,19 @@ MonoBehaviour:
   - {fileID: 5465332939206157556}
   bottomSnap: {fileID: 7529347645701875654}
   placementCheckCollider: {fileID: 0}
+--- !u!114 &3754587980306736617
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6120229487774301896}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 42e90ea235536674d9b4eb1ba4635a13, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BuildCost
+  woodCost: 4
 --- !u!1 &6731036484200803939
 GameObject:
   m_ObjectHideFlags: 0

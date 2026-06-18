@@ -31,6 +31,7 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
+        isSprinting = Keyboard.current.leftShiftKey.isPressed;
         Vector3 move = transform.right * moveInput.x + transform.forward * moveInput.y;
         float currentSpeed = isSprinting ? sprintSpeed : walkSpeed;
 
@@ -53,14 +54,6 @@ public class PlayerController : MonoBehaviour
         cameraTransform.localRotation = Quaternion.Euler(xRotation, 0f, 0f);
         transform.Rotate(Vector3.up * mouseX);
     }
-
-    public void OnSprint(InputValue value)
-    {
-        isSprinting = value.isPressed;
-
-        Debug.Log("Sprint: " + isSprinting);
-    }
-
     public void OnMove(InputValue value)
     {
         moveInput = value.Get<Vector2>();
