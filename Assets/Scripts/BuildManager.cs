@@ -138,6 +138,11 @@ public class BuildManager : MonoBehaviour
                     }
                 }
 
+                BuildRefund refund = buildable.GetComponent<BuildRefund>();
+
+                if (refund != null)
+                    refund.Refund();
+
                 Destroy(buildable.gameObject);
             }
         }

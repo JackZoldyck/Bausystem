@@ -285,6 +285,7 @@ GameObject:
   - component: {fileID: 4717340467070582453}
   - component: {fileID: 2102845083951141048}
   - component: {fileID: 4685618509388489803}
+  - component: {fileID: 6719237609652957418}
   m_Layer: 13
   m_Name: "Roof 45\xB0"
   m_TagString: Untagged
@@ -441,6 +442,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BuildCost
   woodCost: 4
+--- !u!114 &6719237609652957418
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5179824780816375068}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1f6312e0b58f1f34cb4ecbd2e2496053, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BuildRefund
+  refundMultiplier: 1
 --- !u!1 &5742105285345762130
 GameObject:
   m_ObjectHideFlags: 0

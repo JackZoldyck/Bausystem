@@ -65,6 +65,11 @@ public class BuildSupport : MonoBehaviour
 
         if (collision.gameObject.layer == LayerMask.NameToLayer("Ground"))
         {
+            BuildRefund refund = GetComponent<BuildRefund>();
+
+            if (refund != null)
+                refund.Refund();
+
             Destroy(gameObject);
         }
     }
