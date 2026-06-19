@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 public class ResourceHarvester : MonoBehaviour
 {
@@ -13,8 +14,12 @@ public class ResourceHarvester : MonoBehaviour
     {
         if (Input.GetMouseButtonDown(0))
         {
+            if (EventSystem.current.IsPointerOverGameObject())
+                return;
+
             if (buildManager != null && buildManager.IsBuildModeActive())
                 return;
+            
 
             TryHarvest();
         }
@@ -39,10 +44,18 @@ public class ResourceHarvester : MonoBehaviour
 
             if (node != null)
             {
-                if (playerTool == null || !playerTool.hasAxe)
+                if (playerTool == null)
                     return;
 
-                node.Harvest(inventory, playerTool.axeDamage);
+                if (!playerTool.hasAxe)
+                    return;
+
+                node.Harvest(
+                     inventory,
+                     playerTool.axeDamage,
+                     hit.point,
+                     hit.normal
+                );
             }
         }
         else

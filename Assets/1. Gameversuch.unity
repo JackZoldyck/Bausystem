@@ -185,11 +185,7 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 5067951673289762756, guid: e0a029d5848f44208ba9443848f72a04,
-        type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1675188050}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: e0a029d5848f44208ba9443848f72a04, type: 3}
 --- !u!1 &320060269
 GameObject:
@@ -1647,7 +1643,7 @@ MonoBehaviour:
   inventory: {fileID: 1598376909}
   buildManager: {fileID: 1623036772}
   playerTool: {fileID: 1598376911}
-  axeAnimation: {fileID: 1675188050}
+  axeAnimation: {fileID: 1941406508}
 --- !u!114 &1598376911
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1885,20 +1881,6 @@ Transform:
     type: 3}
   m_PrefabInstance: {fileID: 31714254}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &1675188050
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1675188046}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 88f08b7ba38607642ace7e3e89035649, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::AxeAnimation
-  swingAngle: 60
-  swingSpeed: 10
 --- !u!1 &1731759042
 GameObject:
   m_ObjectHideFlags: 0
@@ -2076,6 +2058,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1941406507}
+  - component: {fileID: 1941406508}
   m_Layer: 0
   m_Name: Toolholder
   m_TagString: Untagged
@@ -2099,6 +2082,20 @@ Transform:
   - {fileID: 1675188047}
   m_Father: {fileID: 1959882678}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1941406508
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1941406506}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 88f08b7ba38607642ace7e3e89035649, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AxeAnimation
+  swingAngle: 70
+  swingSpeed: 12
 --- !u!1 &1959882677
 GameObject:
   m_ObjectHideFlags: 0
@@ -2386,7 +2383,7 @@ PrefabInstance:
     - target: {fileID: 1786257863317492831, guid: f549f1a432ea6df4d80fb90c5426ccb2,
         type: 3}
       propertyPath: m_LocalPosition.z
-      value: -6.2378187
+      value: -6.22
       objectReference: {fileID: 0}
     - target: {fileID: 1786257863317492831, guid: f549f1a432ea6df4d80fb90c5426ccb2,
         type: 3}

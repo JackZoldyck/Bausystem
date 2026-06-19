@@ -25,7 +25,7 @@ public class AxeAnimation : MonoBehaviour
         isSwinging = true;
 
         Quaternion hitRotation =
-            startRotation * Quaternion.Euler(swingAngle, 0, 0);
+            startRotation * Quaternion.Euler(swingAngle, -20f, -15f);
 
         float t = 0f;
 
