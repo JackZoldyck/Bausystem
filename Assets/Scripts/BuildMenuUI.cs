@@ -3,6 +3,7 @@ using UnityEngine;
 public class BuildMenuUI : MonoBehaviour
 {
     public GameObject buildMenuPanel;
+    public InventoryUI inventoryUI;
 
     void Start()
     {
@@ -18,12 +19,13 @@ public class BuildMenuUI : MonoBehaviour
         {
             bool active = !buildMenuPanel.activeSelf;
 
+            if (active && inventoryUI != null)
+                inventoryUI.CloseInventory();
+
             buildMenuPanel.SetActive(active);
 
             Cursor.visible = active;
-            Cursor.lockState = active
-                ? CursorLockMode.None
-                : CursorLockMode.Locked;
+            Cursor.lockState = active ? CursorLockMode.None : CursorLockMode.Locked;
 
             if (playerController != null)
                 playerController.enabled = !active;

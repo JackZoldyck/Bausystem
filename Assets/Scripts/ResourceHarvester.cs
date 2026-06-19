@@ -6,12 +6,14 @@ public class ResourceHarvester : MonoBehaviour
     public float harvestDistance = 4f;
     public PlayerInventory inventory;
     public BuildManager buildManager;
+    public PlayerTool playerTool;
+    public AxeAnimation axeAnimation;
 
     void Update()
     {
         if (Input.GetMouseButtonDown(0))
         {
-            if (buildManager.CurrentPrefab != null)
+            if (buildManager != null && buildManager.IsBuildModeActive())
                 return;
 
             TryHarvest();
@@ -20,6 +22,11 @@ public class ResourceHarvester : MonoBehaviour
 
     void TryHarvest()
     {
+        if (axeAnimation != null)
+        {
+            axeAnimation.Swing();
+        }
+
         Debug.Log("Linksklick erkannt");
 
         Ray ray = new Ray(playerCamera.transform.position, playerCamera.transform.forward);
@@ -32,8 +39,10 @@ public class ResourceHarvester : MonoBehaviour
 
             if (node != null)
             {
-                Debug.Log("ResourceNode gefunden");
-                node.Harvest(inventory);
+                if (playerTool == null || !playerTool.hasAxe)
+                    return;
+
+                node.Harvest(inventory, playerTool.axeDamage);
             }
         }
         else

@@ -33,6 +33,11 @@ public class BuildManager : MonoBehaviour
 
     public bool showSnapDebug = false;
 
+    public bool IsBuildModeActive()
+    {
+        return buildModeActive;
+    }
+
     private bool canPlace;
 
     private bool buildModeActive = false;
@@ -63,7 +68,11 @@ public class BuildManager : MonoBehaviour
 
     void Update()
     {
-       // HandleSelection();
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            CancelBuildMode();
+            return;
+        }
 
         if (!buildModeActive)
         {
@@ -451,6 +460,18 @@ public class BuildManager : MonoBehaviour
         Vector3 offset = previewObject.transform.position - ownSnap.transform.position;
 
         return targetSnap.transform.position + offset;
+    }
+    public void CancelBuildMode()
+    {
+        buildModeActive = false;
+
+        if (previewObject != null)
+        {
+            Destroy(previewObject);
+            previewObject = null;
+        }
+
+        currentTargetSnap = null;
     }
 
 }

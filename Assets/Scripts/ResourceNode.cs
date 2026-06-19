@@ -5,9 +5,9 @@ public class ResourceNode : MonoBehaviour
     public int woodAmount = 10;
     public int health = 3;
 
-    public void Harvest(PlayerInventory inventory)
+    public void Harvest(PlayerInventory inventory, int damage)
     {
-        health--;
+        health -= damage;
 
         if (health <= 0)
         {

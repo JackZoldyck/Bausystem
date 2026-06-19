@@ -6,6 +6,7 @@ public class InventoryUI : MonoBehaviour
     public GameObject inventoryPanel;
     public TMP_Text woodText;
     public PlayerInventory inventory;
+    public BuildMenuUI buildMenuUI;
 
     void Start()
     {
@@ -22,6 +23,11 @@ public class InventoryUI : MonoBehaviour
 
             if (active)
                 UpdateUI();
+
+            if (active && buildMenuUI != null)
+            {
+                buildMenuUI.CloseMenu();
+            }
         }
     }
 
@@ -30,5 +36,9 @@ public class InventoryUI : MonoBehaviour
         Debug.Log("UpdateUI aufgerufen");
 
         woodText.text = "Holz: " + inventory.wood;
+    }
+    public void CloseInventory()
+    {
+        inventoryPanel.SetActive(false);
     }
 }
