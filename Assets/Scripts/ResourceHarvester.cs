@@ -9,9 +9,14 @@ public class ResourceHarvester : MonoBehaviour
     public BuildManager buildManager;
     public PlayerTool playerTool;
     public AxeAnimation axeAnimation;
+    public InventoryUI inventoryUI;
+
 
     void Update()
     {
+        if (inventoryUI != null && inventoryUI.IsOpen())
+            return;
+
         if (Input.GetMouseButtonDown(0))
         {
             if (EventSystem.current.IsPointerOverGameObject())

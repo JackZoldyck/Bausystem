@@ -7,6 +7,11 @@ public class InventoryUI : MonoBehaviour
     public TMP_Text woodText;
     public PlayerInventory inventory;
     public BuildMenuUI buildMenuUI;
+    public PlayerController playerController;
+    public bool IsOpen()
+    {
+        return inventoryPanel.activeSelf;
+    }
 
     void Start()
     {
@@ -21,13 +26,14 @@ public class InventoryUI : MonoBehaviour
             bool active = !inventoryPanel.activeSelf;
             inventoryPanel.SetActive(active);
 
+            Cursor.visible = active;
+            Cursor.lockState = active ? CursorLockMode.None : CursorLockMode.Locked;
+
+            if (playerController != null)
+                playerController.lookEnabled = !active;
+
             if (active)
                 UpdateUI();
-
-            if (active && buildMenuUI != null)
-            {
-                buildMenuUI.CloseMenu();
-            }
         }
     }
 
@@ -40,5 +46,11 @@ public class InventoryUI : MonoBehaviour
     public void CloseInventory()
     {
         inventoryPanel.SetActive(false);
+
+        Cursor.visible = false;
+        Cursor.lockState = CursorLockMode.Locked;
+
+        if (playerController != null)
+            playerController.lookEnabled = true;
     }
 }

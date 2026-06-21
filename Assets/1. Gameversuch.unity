@@ -983,6 +983,7 @@ MonoBehaviour:
   woodText: {fileID: 1844157602}
   inventory: {fileID: 1598376909}
   buildMenuUI: {fileID: 718417067}
+  playerController: {fileID: 1598376903}
 --- !u!1 &765891820
 GameObject:
   m_ObjectHideFlags: 0
@@ -1481,6 +1482,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   controller: {fileID: 1598376902}
   cameraTransform: {fileID: 1959882678}
+  lookEnabled: 1
   walkSpeed: 5
   sprintSpeed: 8
   gravity: -9.81
@@ -1625,7 +1627,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0882a50399da88b4eb0013173f7f078f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerInventory
-  wood: 12
+  wood: 0
 --- !u!114 &1598376910
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1644,6 +1646,7 @@ MonoBehaviour:
   buildManager: {fileID: 1623036772}
   playerTool: {fileID: 1598376911}
   axeAnimation: {fileID: 1941406508}
+  inventoryUI: {fileID: 718417069}
 --- !u!114 &1598376911
 MonoBehaviour:
   m_ObjectHideFlags: 0
