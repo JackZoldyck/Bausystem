@@ -41,7 +41,7 @@ public class InventoryUI : MonoBehaviour
     {
         Debug.Log("UpdateUI aufgerufen");
 
-        woodText.text = "Holz: " + inventory.wood;
+        //woodText.text = "Holz: " + inventory.wood;
     }
     public void CloseInventory()
     {

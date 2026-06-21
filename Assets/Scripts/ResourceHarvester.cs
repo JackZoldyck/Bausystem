@@ -14,17 +14,23 @@ public class ResourceHarvester : MonoBehaviour
 
     void Update()
     {
-        if (inventoryUI != null && inventoryUI.IsOpen())
-            return;
-
         if (Input.GetMouseButtonDown(0))
         {
-            if (EventSystem.current.IsPointerOverGameObject())
+            if (inventoryUI != null && inventoryUI.IsOpen())
+            {
+                Debug.Log("Blockiert: Inventar offen");
                 return;
+            }
 
-            if (buildManager != null && buildManager.IsBuildModeActive())
+            if (buildManager != null &&
+                buildManager.IsBuildModeActive())
+            {
+                Debug.Log("Blockiert: Baumodus aktiv");
                 return;
-            
+            }
+
+            if (playerTool == null || !playerTool.hasAxe)
+                return;
 
             TryHarvest();
         }
@@ -32,40 +38,41 @@ public class ResourceHarvester : MonoBehaviour
 
     void TryHarvest()
     {
-        if (axeAnimation != null)
+        if (playerTool == null)
         {
-            axeAnimation.Swing();
+            Debug.Log("PlayerTool Referenz ist NULL");
+            return;
         }
 
-        Debug.Log("Linksklick erkannt");
+        if (!playerTool.hasAxe)
+        {
+            Debug.Log("Axt nicht ausgerüstet");
+            return;
+        }
 
-        Ray ray = new Ray(playerCamera.transform.position, playerCamera.transform.forward);
+        if (axeAnimation != null)
+            axeAnimation.Swing();
+
+        Ray ray = new Ray(
+            playerCamera.transform.position,
+            playerCamera.transform.forward
+        );
 
         if (Physics.Raycast(ray, out RaycastHit hit, harvestDistance))
         {
-            Debug.Log("Getroffen: " + hit.collider.name);
-
-            ResourceNode node = hit.collider.GetComponentInParent<ResourceNode>();
+            ResourceNode node =
+                hit.collider.GetComponentInParent<ResourceNode>();
 
             if (node != null)
             {
-                if (playerTool == null)
-                    return;
-
-                if (!playerTool.hasAxe)
-                    return;
-
                 node.Harvest(
-                     inventory,
-                     playerTool.axeDamage,
-                     hit.point,
-                     hit.normal
+                    inventory,
+                    playerTool.axeDamage,
+                    hit.point,
+                    hit.normal
                 );
             }
         }
-        else
-        {
-            Debug.Log("Nichts getroffen");
-        }
+
     }
 }
