@@ -392,9 +392,6 @@ public class BuildManager : MonoBehaviour
         {
             inventory.wood -= cost.woodCost;
 
-            if (inventoryUI != null)
-                inventoryUI.UpdateUI();
-
             Debug.Log("Holz übrig: " + inventory.wood);
         }
 

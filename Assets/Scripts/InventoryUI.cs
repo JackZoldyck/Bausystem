@@ -1,11 +1,8 @@
 using UnityEngine;
-using TMPro;
 
 public class InventoryUI : MonoBehaviour
 {
     public GameObject inventoryPanel;
-    public TMP_Text woodText;
-    public PlayerInventory inventory;
     public BuildMenuUI buildMenuUI;
     public PlayerController playerController;
     public bool IsOpen()
@@ -16,7 +13,6 @@ public class InventoryUI : MonoBehaviour
     void Start()
     {
         inventoryPanel.SetActive(false);
-        UpdateUI();
     }
 
     void Update()
@@ -24,6 +20,10 @@ public class InventoryUI : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.I))
         {
             bool active = !inventoryPanel.activeSelf;
+
+            if (active && buildMenuUI != null)
+                buildMenuUI.CloseMenu();
+
             inventoryPanel.SetActive(active);
 
             Cursor.visible = active;
@@ -31,18 +31,9 @@ public class InventoryUI : MonoBehaviour
 
             if (playerController != null)
                 playerController.lookEnabled = !active;
-
-            if (active)
-                UpdateUI();
         }
     }
 
-    public void UpdateUI()
-    {
-        Debug.Log("UpdateUI aufgerufen");
-
-        //woodText.text = "Holz: " + inventory.wood;
-    }
     public void CloseInventory()
     {
         inventoryPanel.SetActive(false);

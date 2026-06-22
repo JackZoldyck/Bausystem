@@ -13,10 +13,5 @@ public class BuildRefund : MonoBehaviour
             return;
 
         inventory.wood += Mathf.RoundToInt(cost.woodCost * refundMultiplier);
-
-        InventoryUI inventoryUI = FindFirstObjectByType<InventoryUI>();
-
-        if (inventoryUI != null)
-            inventoryUI.UpdateUI();
     }
 }

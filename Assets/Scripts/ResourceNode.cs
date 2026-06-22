@@ -7,6 +7,8 @@ public class ResourceNode : MonoBehaviour
     public int health = 3;
     public float respawnTime = 60f;
     public GameObject stumpObject;
+    public Sprite woodIcon;
+    public InventoryGridUI inventoryGridUI;
 
     private int maxHealth;
     private Renderer[] renderers;
@@ -38,6 +40,11 @@ public class ResourceNode : MonoBehaviour
         {
             inventory.wood += woodAmount;
 
+            if (inventoryGridUI != null && woodIcon != null)
+            {
+                inventoryGridUI.AddItem(woodIcon, inventory.wood);
+            }
+
             WoodGainPopup popup =
                 FindFirstObjectByType<WoodGainPopup>();
 
@@ -45,12 +52,6 @@ public class ResourceNode : MonoBehaviour
             {
                 popup.ShowWoodGain(woodAmount);
             }
-
-            InventoryUI inventoryUI = FindFirstObjectByType<InventoryUI>();
-
-            if (inventoryUI != null)
-                inventoryUI.UpdateUI();
-
             StartCoroutine(RespawnRoutine());
         }
     }
