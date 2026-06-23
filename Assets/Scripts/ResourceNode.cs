@@ -3,11 +3,17 @@ using UnityEngine;
 
 public class ResourceNode : MonoBehaviour
 {
-    public int woodAmount = 10;
+    public enum ResourceType
+    {
+        Wood,
+        Stone
+    }
+    public ResourceType resourceType;
+    public int resourceAmount = 10;
+    public Sprite resourceIcon;
     public int health = 3;
     public float respawnTime = 60f;
     public GameObject stumpObject;
-    public Sprite woodIcon;
     public InventoryGridUI inventoryGridUI;
 
     private int maxHealth;
@@ -16,6 +22,7 @@ public class ResourceNode : MonoBehaviour
     private TreeHitFeedback feedback;
     private MeshRenderer meshRenderer;
     private Collider treeCollider;
+    private bool isDepleted = false;
 
     void Start()
     {
@@ -32,33 +39,49 @@ public class ResourceNode : MonoBehaviour
 
     public void Harvest(PlayerInventory inventory, int damage, Vector3 hitPoint, Vector3 hitNormal)
     {
+        if (isDepleted)
+            return;
+
         health -= damage;
         if (feedback != null)
             feedback.PlayHitFeedback(hitPoint, hitNormal);
 
         if (health <= 0)
         {
-            inventory.wood += woodAmount;
+            isDepleted = true;
 
-            if (inventoryGridUI != null && woodIcon != null)
+            if (resourceType == ResourceType.Wood)
             {
-                inventoryGridUI.AddItem(woodIcon, inventory.wood);
+                inventory.wood += resourceAmount;
             }
 
-            WoodGainPopup popup =
-                FindFirstObjectByType<WoodGainPopup>();
+            if (resourceType == ResourceType.Stone)
+            {
+                inventory.stone += resourceAmount;
+            }
+
+            if (inventoryGridUI != null && resourceIcon != null)
+            {
+                inventoryGridUI.AddItem(resourceIcon, resourceAmount);
+            }
+
+            string resourceName = resourceType == ResourceType.Wood ? "Holz" : "Stein"; 
+            
+            ResourceGainPopup popup =
+                FindFirstObjectByType<ResourceGainPopup>();
 
             if (popup != null)
             {
-                popup.ShowWoodGain(woodAmount);
+                popup.ShowResourceGain(resourceType.ToString(), resourceAmount);
             }
+
             StartCoroutine(RespawnRoutine());
         }
     }
 
     IEnumerator RespawnRoutine()
     {
-        SetTreeActive(false);
+        SetResourceActive(false);
 
         if (stumpObject != null)
             stumpObject.SetActive(true);
@@ -66,17 +89,24 @@ public class ResourceNode : MonoBehaviour
         yield return new WaitForSeconds(respawnTime);
 
         health = maxHealth;
+        isDepleted = false;
 
-        SetTreeActive(true);
+        SetResourceActive(true);
 
         if (stumpObject != null)
             stumpObject.SetActive(false);
     }
 
-    void SetTreeActive(bool active)
+    void SetResourceActive(bool active)
     {
+        Debug.Log("SetResourceActive: " + active);
+        Debug.Log("Renderer Anzahl: " + renderers.Length);
+        Debug.Log("Collider Anzahl: " + colliders.Length);
+
         foreach (Renderer renderer in renderers)
         {
+            Debug.Log("Renderer gefunden: " + renderer.name);
+
             if (stumpObject != null && renderer.transform.IsChildOf(stumpObject.transform))
                 continue;
 
@@ -85,6 +115,8 @@ public class ResourceNode : MonoBehaviour
 
         foreach (Collider collider in colliders)
         {
+            Debug.Log("Collider gefunden: " + collider.name);
+
             if (stumpObject != null && collider.transform.IsChildOf(stumpObject.transform))
                 continue;
 

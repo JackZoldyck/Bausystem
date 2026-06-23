@@ -2,5 +2,6 @@ using UnityEngine;
 
 public class PlayerInventory : MonoBehaviour
 {
-    public int wood = 100;
+    public int wood;
+    public int stone;
 }

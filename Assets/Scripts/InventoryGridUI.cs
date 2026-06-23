@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class InventoryGridUI : MonoBehaviour
@@ -9,6 +10,8 @@ public class InventoryGridUI : MonoBehaviour
 
     private bool slotsCreated = false;
     private List<InventorySlotUI> slots = new List<InventorySlotUI>();
+
+    private Dictionary<Sprite, int> items = new Dictionary<Sprite, int>();
 
     void Awake()
     {
@@ -21,38 +24,52 @@ public class InventoryGridUI : MonoBehaviour
             return;
 
         slotsCreated = true;
-
         slots.Clear();
 
         for (int i = 0; i < slotCount; i++)
         {
             GameObject slotObject = Instantiate(slotPrefab, slotParent);
-
             InventorySlotUI slotUI = slotObject.GetComponent<InventorySlotUI>();
-
-            if (slotUI == null)
-            {
-                Debug.LogError("Slot Prefab hat kein InventorySlotUI Script!");
-                continue;
-            }
 
             slotUI.ClearSlot();
             slots.Add(slotUI);
         }
-
-        Debug.Log("Inventar Slots erstellt: " + slots.Count);
     }
 
     public void AddItem(Sprite icon, int amount)
     {
         CreateSlots();
 
-        if (slots.Count == 0)
+        if (icon == null)
         {
-            Debug.LogError("Keine Inventar-Slots vorhanden!");
+            Debug.LogWarning("AddItem wurde ohne Icon aufgerufen.");
             return;
         }
 
-        slots[0].SetSlot(icon, amount);
+        if (items.ContainsKey(icon))
+            items[icon] += amount;
+        else
+            items.Add(icon, amount);
+
+        RefreshUI();
+    }
+
+    void RefreshUI()
+    {
+        for (int i = 0; i < slots.Count; i++)
+        {
+            slots[i].ClearSlot();
+        }
+
+        int index = 0;
+
+        foreach (KeyValuePair<Sprite, int> item in items)
+        {
+            if (index >= slots.Count)
+                return;
+
+            slots[index].SetSlot(item.Key, item.Value);
+            index++;
+        }
     }
 }
