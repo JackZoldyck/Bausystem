@@ -4,6 +4,7 @@ public class BuildMenuUI : MonoBehaviour
 {
     public GameObject buildMenuPanel;
     public InventoryUI inventoryUI;
+    public PlayerTool playerTool;
 
     void Start()
     {
@@ -17,6 +18,9 @@ public class BuildMenuUI : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.B))
         {
+            if (playerTool == null || !playerTool.hasHammer)
+                return;
+
             bool active = !buildMenuPanel.activeSelf;
 
             if (active && inventoryUI != null)

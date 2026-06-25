@@ -29,7 +29,7 @@ public class ResourceHarvester : MonoBehaviour
                 return;
             }
 
-            if (playerTool == null || !playerTool.hasAxe)
+            if (playerTool == null || (!playerTool.hasAxe && !playerTool.hasPickaxe))
                 return;
 
             TryHarvest();
@@ -44,14 +44,14 @@ public class ResourceHarvester : MonoBehaviour
             return;
         }
 
-        if (!playerTool.hasAxe)
+        if (playerTool.hasAxe)
         {
-            Debug.Log("Axt nicht ausgerüstet");
-            return;
+            axeAnimation?.Swing();
         }
-
-        if (axeAnimation != null)
-            axeAnimation.Swing();
+        else if (playerTool.hasPickaxe)
+        {
+            playerTool.pickaxeAnimation?.Swing();
+        }
 
         Ray ray = new Ray(
             playerCamera.transform.position,
@@ -65,9 +65,17 @@ public class ResourceHarvester : MonoBehaviour
 
             if (node != null)
             {
+                if (node.requiredTool == ResourceNode.RequiredTool.Axe && !playerTool.hasAxe)
+                    return;
+
+                if (node.requiredTool == ResourceNode.RequiredTool.Pickaxe && !playerTool.hasPickaxe)
+                    return;
+
+                int damage = playerTool.hasAxe ? playerTool.axeDamage : playerTool.pickaxeDamage;
+
                 node.Harvest(
                     inventory,
-                    playerTool.axeDamage,
+                    damage,
                     hit.point,
                     hit.normal
                 );

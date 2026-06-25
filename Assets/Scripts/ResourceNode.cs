@@ -8,7 +8,14 @@ public class ResourceNode : MonoBehaviour
         Wood,
         Stone
     }
+
+    public enum RequiredTool
+    {
+        Axe,
+        Pickaxe
+    }
     public ResourceType resourceType;
+    public RequiredTool requiredTool;
     public int resourceAmount = 10;
     public Sprite resourceIcon;
     public int health = 3;
