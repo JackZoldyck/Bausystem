@@ -8,6 +8,10 @@ public class InventorySlotUI : MonoBehaviour,
 {
     public Image icon;
     public TMP_Text amountText;
+    public InventoryGridUI GetInventoryGrid()
+    {
+        return inventoryGrid;
+    }
 
     private InventoryGridUI inventoryGrid;
     private int slotIndex;
@@ -21,14 +25,20 @@ public class InventorySlotUI : MonoBehaviour,
         slotIndex = index;
     }
 
-    public void SetSlot(Sprite sprite, int amount)
+    public void SetSlot(ItemData item, int amount)
     {
+        if (item == null)
+        {
+            ClearSlot();
+            return;
+        }
+
         icon.gameObject.SetActive(true);
-        icon.sprite = sprite;
+        icon.sprite = item.icon;
         icon.enabled = true;
         icon.preserveAspect = true;
 
-        amountText.text = amount.ToString();
+        amountText.text = amount > 1 ? amount.ToString() : "";
     }
 
     public void ClearSlot()
@@ -79,16 +89,45 @@ public class InventorySlotUI : MonoBehaviour,
         InventorySlotUI draggedSlot =
             eventData.pointerDrag.GetComponent<InventorySlotUI>();
 
-        if (draggedSlot == null)
+        if (draggedSlot != null)
+        {
+            inventoryGrid.SwapSlots(draggedSlot.slotIndex, slotIndex);
             return;
+        }
 
-        inventoryGrid.SwapSlots(draggedSlot.slotIndex, slotIndex);
+        InventoryHotbarSlotUI draggedHotbarSlot =
+            eventData.pointerDrag.GetComponent<InventoryHotbarSlotUI>();
+
+        if (draggedHotbarSlot != null)
+        {
+            inventoryGrid.MoveHotbarSlotToInventorySlot(draggedHotbarSlot, slotIndex);
+            return;
+        }
     }
     public void OnPointerClick(PointerEventData eventData)
     {
-        if (eventData.button == PointerEventData.InputButton.Right)
+        if (eventData.button != PointerEventData.InputButton.Right)
+            return;
+
+        InventorySlotData data = GetSlotData();
+
+        if (data != null &&
+            data.item != null &&
+            data.item.itemType == ItemType.Food)
         {
-            inventoryGrid.SplitStack(slotIndex);
+            inventoryGrid.EatItem(slotIndex);
+            return;
         }
+
+        inventoryGrid.SplitStack(slotIndex);
+    }
+    public int GetSlotIndex()
+    {
+        return slotIndex;
+    }
+
+    public InventorySlotData GetSlotData()
+    {
+        return inventoryGrid.GetSlotData(slotIndex);
     }
 }

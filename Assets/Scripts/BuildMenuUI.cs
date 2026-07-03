@@ -5,6 +5,7 @@ public class BuildMenuUI : MonoBehaviour
     public GameObject buildMenuPanel;
     public InventoryUI inventoryUI;
     public PlayerTool playerTool;
+    public HotbarUI hotbarUI;
 
     void Start()
     {
@@ -38,6 +39,9 @@ public class BuildMenuUI : MonoBehaviour
     public void CloseMenu()
     {
         buildMenuPanel.SetActive(false);
+
+        if (hotbarUI != null)
+            hotbarUI.SetVisible(true);
 
         Cursor.visible = false;
         Cursor.lockState = CursorLockMode.Locked;

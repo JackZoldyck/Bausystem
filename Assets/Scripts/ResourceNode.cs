@@ -17,7 +17,7 @@ public class ResourceNode : MonoBehaviour
     public ResourceType resourceType;
     public RequiredTool requiredTool;
     public int resourceAmount = 10;
-    public Sprite resourceIcon;
+    public ItemData resourceItem;
     public int health = 3;
     public float respawnTime = 60f;
     public GameObject stumpObject;
@@ -31,6 +31,12 @@ public class ResourceNode : MonoBehaviour
     private Collider treeCollider;
     private bool isDepleted = false;
 
+
+    void Awake()
+    {
+        if (inventoryGridUI == null)
+            inventoryGridUI = InventoryGridUI.Instance;
+    }
     void Start()
     {
         maxHealth = health;
@@ -42,6 +48,9 @@ public class ResourceNode : MonoBehaviour
 
         if (stumpObject != null)
             stumpObject.SetActive(false);
+
+        if (inventoryGridUI == null)
+            inventoryGridUI = InventoryGridUI.Instance;
     }
 
     public void Harvest(PlayerInventory inventory, int damage, Vector3 hitPoint, Vector3 hitNormal)
@@ -67,9 +76,31 @@ public class ResourceNode : MonoBehaviour
                 inventory.stone += resourceAmount;
             }
 
-            if (inventoryGridUI != null && resourceIcon != null)
+            if (inventoryGridUI == null)
             {
-                inventoryGridUI.AddItem(resourceIcon, resourceAmount);
+                inventoryGridUI = InventoryGridUI.Instance;
+            }
+
+            if (inventoryGridUI == null)
+            {
+                inventoryGridUI =
+                    FindAnyObjectByType<InventoryGridUI>(
+                        FindObjectsInactive.Include
+                    );
+            }
+
+            Debug.Log("InventoryGridUI: " + inventoryGridUI);
+            Debug.Log("ResourceItem: " + resourceItem);
+            Debug.Log("ResourceAmount: " + resourceAmount);
+
+            if (inventoryGridUI != null && resourceItem != null)
+            {
+                inventoryGridUI.AddItem(resourceItem, resourceAmount);
+                Debug.Log("Resource wurde ins Inventar gelegt.");
+            }
+            else
+            {
+                Debug.LogError("Resource konnte NICHT ins Inventar gelegt werden.");
             }
 
             string resourceName = resourceType == ResourceType.Wood ? "Holz" : "Stein"; 

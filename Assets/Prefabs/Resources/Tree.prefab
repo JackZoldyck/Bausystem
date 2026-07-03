@@ -4840,7 +4840,7 @@ ParticleSystemRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 041c80fc1b718b44a88a1d98c888484f, type: 2}
+  - {fileID: 2100000, guid: dd4318ee636f7184c8b5aa5466d254ea, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -4906,7 +4906,7 @@ GameObject:
   - component: {fileID: 267012363833298319}
   - component: {fileID: 4641247565373933868}
   - component: {fileID: 2856391978771466128}
-  - component: {fileID: 5250312012361587724}
+  - component: {fileID: 2032220236753272771}
   - component: {fileID: 2258845140886717007}
   - component: {fileID: 7943166591745886372}
   m_Layer: 0
@@ -4999,7 +4999,7 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!114 &5250312012361587724
+--- !u!114 &2032220236753272771
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -5012,8 +5012,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ResourceNode
   resourceType: 0
+  requiredTool: 0
   resourceAmount: 10
-  resourceIcon: {fileID: 21300000, guid: e943e3636c627c04ab04a4c5c52a0d7b, type: 3}
+  resourceItem: {fileID: 11400000, guid: 5f363c077228b8e4e9f29ac4d0e9bef4, type: 2}
   health: 3
   respawnTime: 60
   stumpObject: {fileID: 108482645794666377}

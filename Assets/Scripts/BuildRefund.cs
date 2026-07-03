@@ -4,14 +4,37 @@ public class BuildRefund : MonoBehaviour
 {
     public float refundMultiplier = 1f;
 
+    public ItemData woodItem;
+    public InventoryGridUI inventoryGridUI;
+
+    void Awake()
+    {
+        if (inventoryGridUI == null)
+        {
+            inventoryGridUI = InventoryGridUI.Instance;
+
+            if (inventoryGridUI == null)
+            {
+                inventoryGridUI =
+                    FindAnyObjectByType<InventoryGridUI>(
+                        FindObjectsInactive.Include
+                    );
+            }
+        }
+    }
+
     public void Refund()
     {
-        PlayerInventory inventory = FindFirstObjectByType<PlayerInventory>();
         BuildCost cost = GetComponent<BuildCost>();
 
-        if (inventory == null || cost == null)
+        if (inventoryGridUI == null || cost == null || woodItem == null)
             return;
 
-        inventory.wood += Mathf.RoundToInt(cost.woodCost * refundMultiplier);
+        int refundAmount =
+            Mathf.RoundToInt(cost.woodCost * refundMultiplier);
+
+        inventoryGridUI.AddItem(woodItem, refundAmount);
+
+        Debug.Log("Refund: +" + refundAmount + " Holz");
     }
 }

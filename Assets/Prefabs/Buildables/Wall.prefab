@@ -655,3 +655,5 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BuildRefund
   refundMultiplier: 1
+  woodItem: {fileID: 11400000, guid: 5f363c077228b8e4e9f29ac4d0e9bef4, type: 2}
+  inventoryGridUI: {fileID: 0}

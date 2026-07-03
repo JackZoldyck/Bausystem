@@ -3,9 +3,25 @@ using UnityEngine;
 
 public class InventoryGridUI : MonoBehaviour
 {
+    public static InventoryGridUI Instance;
+
     public GameObject slotPrefab;
     public Transform slotParent;
     public int slotCount = 20;
+
+    public bool HasItem(ItemData item, int amount)
+    {
+        int total = 0;
+
+        for (int i = 0; i < slotData.Count; i++)
+        {
+            if (!slotData[i].IsEmpty() && slotData[i].item == item)
+                total += slotData[i].amount;
+        }
+
+        return total >= amount;
+    }
+
 
     private bool slotsCreated = false;
 
@@ -14,6 +30,7 @@ public class InventoryGridUI : MonoBehaviour
 
     void Awake()
     {
+        Instance = this;
         CreateSlots();
     }
 
@@ -42,34 +59,63 @@ public class InventoryGridUI : MonoBehaviour
         }
     }
 
-    public void AddItem(Sprite icon, int amount)
+    public void AddItem(ItemData item, int amount)
     {
+        Debug.Log("AddItem AUF: " + gameObject.name);
+        Debug.Log("AddItem Item: " + item);
+        Debug.Log("AddItem Amount: " + amount);
+        Debug.Log("Item Name: " + item.itemName);
+        Debug.Log("Item MaxStackSize: " + item.maxStackSize);
+        Debug.Log("Item Asset: " + item.name);
+        Debug.Log("SlotData Count: " + slotData.Count);
         CreateSlots();
 
-        if (icon == null)
+        if (item == null)
         {
-            Debug.LogWarning("AddItem wurde ohne Icon aufgerufen.");
+            Debug.LogWarning("AddItem wurde ohne Item aufgerufen.");
             return;
         }
 
+        // Vorhandene Stacks auffüllen
         for (int i = 0; i < slotData.Count; i++)
         {
-            if (!slotData[i].IsEmpty() && slotData[i].icon == icon)
+            if (!slotData[i].IsEmpty()
+                && slotData[i].item == item
+                && slotData[i].amount < item.maxStackSize)
             {
-                slotData[i].amount += amount;
-                RefreshUI();
-                return;
+                int space = item.maxStackSize - slotData[i].amount;
+                int addAmount = Mathf.Min(space, amount);
+
+                slotData[i].amount += addAmount;
+                amount -= addAmount;
+
+                if (amount <= 0)
+                {
+                    RefreshUI();
+                    return;
+                }
             }
         }
 
+        // Neue Slots belegen
         for (int i = 0; i < slotData.Count; i++)
         {
             if (slotData[i].IsEmpty())
             {
-                slotData[i].icon = icon;
-                slotData[i].amount = amount;
-                RefreshUI();
-                return;
+                int addAmount = Mathf.Min(amount, item.maxStackSize);
+
+                Debug.Log("Neuer Slot belegt: " + i + " mit " + item.itemName + " x" + addAmount);
+
+                slotData[i].item = item;
+                slotData[i].amount = addAmount;
+
+                amount -= addAmount;
+
+                if (amount <= 0)
+                {
+                    RefreshUI();
+                    return;
+                }
             }
         }
 
@@ -87,7 +133,7 @@ public class InventoryGridUI : MonoBehaviour
         if (fromSlot.IsEmpty())
             return;
 
-        if (!toSlot.IsEmpty() && fromSlot.icon == toSlot.icon)
+        if (!toSlot.IsEmpty() && fromSlot.item == toSlot.item)
         {
             toSlot.amount += fromSlot.amount;
             fromSlot.Clear();
@@ -133,20 +179,107 @@ public class InventoryGridUI : MonoBehaviour
         int splitAmount = sourceSlot.amount / 2;
         sourceSlot.amount -= splitAmount;
 
-        slotData[emptyIndex].icon = sourceSlot.icon;
+        slotData[emptyIndex].item = sourceSlot.item;
         slotData[emptyIndex].amount = splitAmount;
 
         RefreshUI();
     }
 
-    void RefreshUI()
+    public void RemoveItem(ItemData item, int amount)
+    {
+        int remaining = amount;
+
+        for (int i = 0; i < slotData.Count; i++)
+        {
+            if (slotData[i].IsEmpty() || slotData[i].item != item)
+                continue;
+
+            int removeAmount = Mathf.Min(slotData[i].amount, remaining);
+
+            slotData[i].amount -= removeAmount;
+            remaining -= removeAmount;
+
+            if (slotData[i].amount <= 0)
+                slotData[i].Clear();
+
+            if (remaining <= 0)
+                break;
+        }
+
+        RefreshUI();
+    }
+
+    public void EatItem(int index)
+    {
+        if (index < 0 || index >= slotData.Count)
+            return;
+
+        InventorySlotData data = slotData[index];
+
+        if (data.IsEmpty())
+            return;
+
+        if (data.item.itemType != ItemType.Food)
+            return;
+
+        PlayerStats playerStats = FindFirstObjectByType<PlayerStats>();
+
+        if (playerStats == null)
+        {
+            Debug.LogError("Kein PlayerStats-Objekt gefunden!");
+            return;
+        }
+
+        bool eaten = playerStats.EatFood(data.item);
+
+        if (!eaten)
+            return;
+
+        data.amount--;
+
+        if (data.amount <= 0)
+        {
+            data.Clear();
+        }
+
+        RefreshUI();
+    }
+
+    public void RefreshUI()
     {
         for (int i = 0; i < slotUIs.Count; i++)
         {
             if (slotData[i].IsEmpty())
                 slotUIs[i].ClearSlot();
             else
-                slotUIs[i].SetSlot(slotData[i].icon, slotData[i].amount);
+                slotUIs[i].SetSlot(slotData[i].item, slotData[i].amount);
+        }
+    }
+    public InventorySlotData GetSlotData(int index)
+    {
+        if (index < 0 || index >= slotData.Count)
+            return null;
+
+        return slotData[index];
+    }
+
+    public void MoveHotbarSlotToInventorySlot(InventoryHotbarSlotUI hotbarSlot, int inventoryIndex)
+    {
+        HotbarSlotData hotbarSlotData = hotbarSlot.hotbarData.GetSlot(hotbarSlot.slotIndex);
+
+        if (hotbarSlotData == null || hotbarSlotData.IsEmpty())
+            return;
+
+        InventorySlotData targetSlot = slotData[inventoryIndex];
+
+        if (targetSlot.IsEmpty())
+        {
+            targetSlot.item = hotbarSlotData.item;
+            targetSlot.amount = hotbarSlotData.amount;
+
+            hotbarSlot.hotbarData.ClearSlot(hotbarSlot.slotIndex);
+
+            RefreshUI();
         }
     }
 }

@@ -25,6 +25,9 @@ public class BuildManager : MonoBehaviour
     public float rotationStep = 45f;
     public LayerMask deleteMask;
 
+    public InventoryGridUI inventoryGridUI;
+    public ItemData woodItem;
+
     public Material validPreviewMaterial;
     public Material invalidPreviewMaterial;
     public LayerMask collisionMask;
@@ -376,7 +379,7 @@ public class BuildManager : MonoBehaviour
 
         if (cost != null)
         {
-            if (inventory.wood < cost.woodCost)
+            if (!inventoryGridUI.HasItem(woodItem, cost.woodCost))
             {
                 uiMessage.ShowMessage("MATERIAL MISSING");
                 return;
@@ -390,9 +393,7 @@ public class BuildManager : MonoBehaviour
 
         if (cost != null)
         {
-            inventory.wood -= cost.woodCost;
-
-            Debug.Log("Holz übrig: " + inventory.wood);
+            inventoryGridUI.RemoveItem(woodItem, cost.woodCost);
         }
 
         BuildSupport buildSupport = placedObject.GetComponent<BuildSupport>();

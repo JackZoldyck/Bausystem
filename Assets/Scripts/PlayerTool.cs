@@ -5,14 +5,21 @@ public class PlayerTool : MonoBehaviour
     public GameObject axeObject;
     public GameObject pickaxeObject;
     public GameObject hammerObject;
+    public HotbarUI hotbarUI;
     public PickaxeAnimation pickaxeAnimation;
 
     public bool hasAxe = false;
     public bool hasPickaxe = false;
     public bool hasHammer = false;
 
+    public bool unlockedAxe = false;
+    public bool unlockedPickaxe = false;
+    public bool unlockedHammer = false;
+
     public int axeDamage = 1;
     public int pickaxeDamage = 1;
+
+    private int selectedHotbarIndex = -1;
 
     void Start()
     {
@@ -21,48 +28,85 @@ public class PlayerTool : MonoBehaviour
 
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Alpha1))
+        for (int i = 0; i < 9; i++)
         {
-            hasAxe = !hasAxe;
-
-            if (hasAxe)
+            if (Input.GetKeyDown(KeyCode.Alpha1 + i))
             {
-                hasPickaxe = false;
-                hasHammer = false;
+                SelectHotbarSlot(i);
             }
+        }
+    }
 
-            UpdateToolState();
+    void SelectHotbarSlot(int index)
+    {
+        if (hotbarUI == null || hotbarUI.hotbarData == null)
+            return;
+
+        if (selectedHotbarIndex == index)
+        {
+            selectedHotbarIndex = -1;
+            UnequipAllTools();
+            hotbarUI.DeselectAll();
+            return;
         }
 
-        if (Input.GetKeyDown(KeyCode.Alpha2))
+        HotbarSlotData slot = hotbarUI.hotbarData.GetSlot(index);
+
+        if (slot == null || slot.IsEmpty() || slot.item == null)
         {
-            hasPickaxe = !hasPickaxe;
-
-            if (hasPickaxe)
-            {
-                hasAxe = false;
-                hasHammer = false;
-            }
-
-            UpdateToolState();
+            selectedHotbarIndex = -1;
+            UnequipAllTools();
+            hotbarUI.DeselectAll();
+            return;
         }
 
-        if (Input.GetKeyDown(KeyCode.Alpha3))
+        selectedHotbarIndex = index;
+        hotbarUI.SetSelectedIndex(index);
+
+        EquipTool(slot.item);
+    }
+
+    void EquipTool(ItemData item)
+    {
+        Debug.Log("EquipTool: " + item.itemName + " / " + item.toolType);
+
+        UnequipAllTools();
+
+        if (item.itemType != ItemType.Tool)
+            return;
+
+        switch (item.toolType)
         {
-            hasHammer = !hasHammer;
+            case ToolType.Axe:
+                Debug.Log("Axt wird ausgerüstet");
+                hasAxe = true;
+                break;
 
-            if (hasHammer)
-            {
-                hasAxe = false;
-                hasPickaxe = false;
-            }
+            case ToolType.Pickaxe:
+                hasPickaxe = true;
+                break;
 
-            UpdateToolState();
+            case ToolType.Hammer:
+                hasHammer = true;
+                break;
         }
+
+        UpdateToolState();
+    }
+
+    void UnequipAllTools()
+    {
+        hasAxe = false;
+        hasPickaxe = false;
+        hasHammer = false;
+
+        UpdateToolState();
     }
 
     void UpdateToolState()
     {
+        Debug.Log("UpdateToolState Axe: " + hasAxe + " AxeObject: " + axeObject);
+
         if (axeObject != null)
             axeObject.SetActive(hasAxe);
 
@@ -75,15 +119,22 @@ public class PlayerTool : MonoBehaviour
 
     public void GiveAxe()
     {
-        hasAxe = true;
-        hasPickaxe = false;
+        unlockedAxe = true;
+
         UpdateToolState();
     }
 
     public void GivePickaxe()
     {
-        hasPickaxe = true;
-        hasAxe = false;
+        unlockedPickaxe = true;
+
+        UpdateToolState();
+    }
+
+    public void GiveHammer()
+    {
+        unlockedHammer = true;
+
         UpdateToolState();
     }
 }
