@@ -4,6 +4,10 @@ public class SurvivalHUD : MonoBehaviour
 {
     public PlayerStats playerStats;
 
+    public GameObject inventoryPanel;
+    public GameObject craftingPanel;
+    public GameObject buildMenuPanel;
+
     public RectTransform healthBar;
     public RectTransform healthFill;
 
@@ -40,6 +44,19 @@ public class SurvivalHUD : MonoBehaviour
 
     void Update()
     {
+        bool menuOpen =
+            (inventoryPanel != null && inventoryPanel.activeSelf) ||
+            (craftingPanel != null && craftingPanel.activeSelf) ||
+            (buildMenuPanel != null && buildMenuPanel.activeSelf);
+
+        if (menuOpen)
+        {
+            if (staminaBarObject != null)
+                staminaBarObject.SetActive(false);
+
+            return;
+        }
+
         if (playerStats == null)
             return;
 

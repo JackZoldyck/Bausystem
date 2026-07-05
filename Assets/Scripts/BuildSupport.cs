@@ -63,12 +63,15 @@ public class BuildSupport : MonoBehaviour
         if (!isFallingBecauseUnsupported)
             return;
 
-        if (collision.gameObject.layer == LayerMask.NameToLayer("Ground"))
+        if (collision.gameObject.CompareTag("Ground") ||
+    collision.gameObject.layer == LayerMask.NameToLayer("Ground"))
         {
             BuildRefund refund = GetComponent<BuildRefund>();
 
             if (refund != null)
+            {
                 refund.Refund();
+            }
 
             Destroy(gameObject);
         }
