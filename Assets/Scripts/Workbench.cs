@@ -77,9 +77,4 @@ public class Workbench : MonoBehaviour
         Cursor.visible = false;
         Cursor.lockState = CursorLockMode.Locked;
     }
-
-    public void CloseButtonPressed()
-    {
-        CloseUI();
-    }
 }

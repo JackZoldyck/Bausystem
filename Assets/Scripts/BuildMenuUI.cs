@@ -6,6 +6,7 @@ public class BuildMenuUI : MonoBehaviour
     public InventoryUI inventoryUI;
     public PlayerTool playerTool;
     public HotbarUI hotbarUI;
+    public UIStateManager uiStateManager;
 
     void Start()
     {
@@ -23,6 +24,9 @@ public class BuildMenuUI : MonoBehaviour
                 return;
 
             bool active = !buildMenuPanel.activeSelf;
+
+            if (active && uiStateManager != null && uiStateManager.IsAnyMenuOpen())
+                return;
 
             if (active && inventoryUI != null)
                 inventoryUI.CloseInventory();

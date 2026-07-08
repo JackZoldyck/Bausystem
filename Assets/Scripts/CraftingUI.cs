@@ -12,6 +12,7 @@ public class CraftingUI : MonoBehaviour
     public HotbarUI hotbarUI;
     public PlayerController playerController;
     public InventoryGridUI inventoryGridUI;
+    public UIStateManager uiStateManager;
     public ItemData woodItem;
     public ItemData stoneItem;
 
@@ -33,6 +34,9 @@ public class CraftingUI : MonoBehaviour
         {
             bool active = !craftingPanel.activeSelf;
 
+            if (active && uiStateManager != null && uiStateManager.IsAnyMenuOpen())
+                return;
+
             if (active)
             {
                 inventoryUI?.CloseInventory();
@@ -47,9 +51,10 @@ public class CraftingUI : MonoBehaviour
                 : CursorLockMode.Locked;
 
             if (playerController != null)
-                playerController.lookEnabled = !active;    
+                playerController.lookEnabled = !active;
         }
-       UpdateButtonStates();
+
+        UpdateButtonStates();
     }
 
     void UpdateButtonStates()

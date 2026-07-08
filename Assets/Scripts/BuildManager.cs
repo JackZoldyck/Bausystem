@@ -124,6 +124,8 @@ public class BuildManager : MonoBehaviour
 
         selectedPrefabIndex = index;
 
+        currentRotation = playerCamera.transform.eulerAngles.y + 90f;
+
         buildModeActive = true;
 
         if (previewObject != null)
@@ -411,7 +413,12 @@ public class BuildManager : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.R))
         {
-            currentRotation += rotationStep;
+            currentRotation = (currentRotation + rotationStep) % 360f;
+        }
+
+        if (Input.GetKeyDown(KeyCode.Q))
+        {
+            currentRotation = (currentRotation - rotationStep + 360f) % 360f;
         }
     }
 

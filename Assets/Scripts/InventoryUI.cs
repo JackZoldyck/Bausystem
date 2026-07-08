@@ -8,6 +8,7 @@ public class InventoryUI : MonoBehaviour
     public PlayerController playerController;
     public GameObject craftingPanel;
     public GameObject buildMenuPanel;
+    public UIStateManager uiStateManager;
     public bool IsOpen()
     {
         return inventoryPanel.activeSelf;
@@ -22,18 +23,14 @@ public class InventoryUI : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.I))
         {
-            if ((craftingPanel != null && craftingPanel.activeSelf) ||
-                (buildMenuUI != null && buildMenuUI.buildMenuPanel.activeSelf))
-            {
-                return;
-            }
-
             bool active = !inventoryPanel.activeSelf;
+
+            if (active && uiStateManager != null && uiStateManager.IsAnyMenuOpen())
+                return;
 
             if (active && buildMenuUI != null)
                 buildMenuUI.CloseMenu();
 
-            inventoryPanel.SetActive(active);
             inventoryPanel.SetActive(active);
 
             Cursor.visible = active;
