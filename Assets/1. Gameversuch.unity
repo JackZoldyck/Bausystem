@@ -1636,16 +1636,25 @@ MonoBehaviour:
   branchYOffset: 0.2
   stoneYOffset: 0.2
   mushroomYOffset: 0.2
-  minTrees: 40
-  maxTrees: 80
-  minRocks: 30
-  maxRocks: 50
+  minTrees: 80
+  maxTrees: 150
+  minRocks: 50
+  maxRocks: 80
   minBranches: 100
   maxBranches: 200
   minStones: 100
   maxStones: 200
   minMushrooms: 50
   maxMushrooms: 100
+  treeClusterRadius: 18
+  treeClusterChance: 0.65
+  branchMinDistanceFromTree: 2
+  branchMaxDistanceFromTree: 10
+  stoneMinDistanceFromRock: 2
+  stoneMaxDistanceFromRock: 9
+  mushroomMinDistance: 2
+  mushroomMaxDistance: 8
+  rockMinDistanceFromTrees: 10
 --- !u!4 &678269764
 Transform:
   m_ObjectHideFlags: 0
