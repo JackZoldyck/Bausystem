@@ -2,9 +2,13 @@ using UnityEngine;
 
 public class PlayerTool : MonoBehaviour
 {
-    public GameObject axeObject;
-    public GameObject pickaxeObject;
-    public GameObject hammerObject;
+    public GameObject axeObjectFP;
+    public GameObject pickaxeObjectFP;
+    public GameObject hammerObjectFP;
+
+    public GameObject axeObjectTP;
+    public GameObject pickaxeObjectTP;
+    public GameObject hammerObjectTP;
     public HotbarUI hotbarUI;
     public PickaxeAnimation pickaxeAnimation;
 
@@ -20,6 +24,8 @@ public class PlayerTool : MonoBehaviour
     public int pickaxeDamage = 1;
 
     private int selectedHotbarIndex = -1;
+
+    [SerializeField] private PlayerZoomCamera playerZoomCamera;
 
     void Start()
     {
@@ -102,15 +108,33 @@ public class PlayerTool : MonoBehaviour
 
     void UpdateToolState()
     {
+        bool firstPerson = true;
 
-        if (axeObject != null)
-            axeObject.SetActive(hasAxe);
+        if (playerZoomCamera != null)
+            firstPerson = playerZoomCamera.IsFirstPerson;
 
-        if (pickaxeObject != null)
-            pickaxeObject.SetActive(hasPickaxe);
+        SetFirstPerson(firstPerson);
+    }
 
-        if (hammerObject != null)
-            hammerObject.SetActive(hasHammer);
+    public void SetFirstPerson(bool firstPerson)
+    {
+        if (axeObjectFP != null)
+            axeObjectFP.SetActive(firstPerson && hasAxe);
+
+        if (pickaxeObjectFP != null)
+            pickaxeObjectFP.SetActive(firstPerson && hasPickaxe);
+
+        if (hammerObjectFP != null)
+            hammerObjectFP.SetActive(firstPerson && hasHammer);
+
+        if (axeObjectTP != null)
+            axeObjectTP.SetActive(!firstPerson && hasAxe);
+
+        if (pickaxeObjectTP != null)
+            pickaxeObjectTP.SetActive(!firstPerson && hasPickaxe);
+
+        if (hammerObjectTP != null)
+            hammerObjectTP.SetActive(!firstPerson && hasHammer);
     }
 
     public void GiveAxe()
