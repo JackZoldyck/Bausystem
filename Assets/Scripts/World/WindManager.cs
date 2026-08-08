@@ -23,7 +23,7 @@ public class WindManager : MonoBehaviour
     [Header("Leaf Shader")]
     public Material leafMaterial;
 
-    public float leafStrengthMultiplier = 0.0004f;
+    public float leafStrengthMultiplier = 0.01f;
 
     private float targetAngle;
     private float targetStrength;
