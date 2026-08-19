@@ -10,7 +10,9 @@ public class PlayerTool : MonoBehaviour
     public GameObject pickaxeObjectTP;
     public GameObject hammerObjectTP;
     public HotbarUI hotbarUI;
+    public AxeAnimation axeAnimation;
     public PickaxeAnimation pickaxeAnimation;
+    public BuildManager buildManager;
 
     public bool hasAxe = false;
     public bool hasPickaxe = false;
@@ -26,6 +28,7 @@ public class PlayerTool : MonoBehaviour
     private int selectedHotbarIndex = -1;
 
     [SerializeField] private PlayerZoomCamera playerZoomCamera;
+    [SerializeField] private Animator thirdPersonAnimator;
 
     void Start()
     {
@@ -103,6 +106,9 @@ public class PlayerTool : MonoBehaviour
         hasPickaxe = false;
         hasHammer = false;
 
+        if (buildManager != null)
+            buildManager.CancelBuildMode();
+
         UpdateToolState();
     }
 
@@ -156,5 +162,47 @@ public class PlayerTool : MonoBehaviour
         unlockedHammer = true;
 
         UpdateToolState();
+    }
+
+    public void PlayAxeSwing()
+    {
+        if (!hasAxe)
+            return;
+
+        bool firstPerson = true;
+
+        if (playerZoomCamera != null)
+            firstPerson = playerZoomCamera.IsFirstPerson;
+
+        if (firstPerson)
+        {
+            axeAnimation?.Swing();
+        }
+        else
+        {
+            if (thirdPersonAnimator != null)
+                thirdPersonAnimator.SetTrigger("AxeSwing");
+        }
+    }
+
+    public void PlayPickaxeSwing()
+    {
+        if (!hasPickaxe)
+            return;
+
+        bool firstPerson = true;
+
+        if (playerZoomCamera != null)
+            firstPerson = playerZoomCamera.IsFirstPerson;
+
+        if (firstPerson)
+        {
+            pickaxeAnimation?.Swing();
+        }
+        else
+        {
+            if (thirdPersonAnimator != null)
+                thirdPersonAnimator.SetTrigger("PickaxeSwing");
+        }
     }
 }

@@ -46,7 +46,7 @@ public class BuildManager : MonoBehaviour
     private bool buildModeActive = false;
 
     private GameObject previewObject;
-    private float currentRotation;
+    private float currentRotation = 0f;
     private SnapPoint currentTargetSnap;
     private PlayerInventory inventory;
 
@@ -123,8 +123,6 @@ public class BuildManager : MonoBehaviour
             return;
 
         selectedPrefabIndex = index;
-
-        currentRotation = playerCamera.transform.eulerAngles.y + 90f;
 
         buildModeActive = true;
 

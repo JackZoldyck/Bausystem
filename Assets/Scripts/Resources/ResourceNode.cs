@@ -89,13 +89,33 @@ public class ResourceNode : MonoBehaviour
                     );
             }
 
-            if (inventoryGridUI != null && resourceItem != null)
+            InventoryGridUI currentInventory =
+                InventoryGridUI.Instance;
+
+            if (currentInventory == null)
             {
-                inventoryGridUI.AddItem(resourceItem, resourceAmount);
+                currentInventory =
+                    FindAnyObjectByType<InventoryGridUI>(
+                        FindObjectsInactive.Include
+                    );
             }
 
-            string resourceName = resourceType == ResourceType.Wood ? "Holz" : "Stein"; 
-            
+            if (currentInventory != null && resourceItem != null)
+            {
+                currentInventory.AddItem(
+                    resourceItem,
+                    resourceAmount
+                );
+            }
+            else
+            {
+                Debug.LogError(
+                    $"ResourceNode: Ressource konnte nicht ins Inventar gelegt werden. " +
+                    $"Inventory: {currentInventory}, ResourceItem: {resourceItem}",
+                    this
+                );
+            }
+
             ResourceGainPopup popup =
                 FindFirstObjectByType<ResourceGainPopup>();
 

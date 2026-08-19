@@ -30,6 +30,19 @@ public class InventoryGridUI : MonoBehaviour
 
     void Awake()
     {
+  
+            if (Instance != null && Instance != this)
+            {
+                Debug.LogWarning(
+                    $"Zweite InventoryGridUI gefunden! " +
+                    $"Alt: {Instance.name}, Neu: {name}",
+                    this
+                );
+            }
+
+            Instance = this;
+            CreateSlots();
+
         Instance = this;
         CreateSlots();
     }
