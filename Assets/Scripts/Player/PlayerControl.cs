@@ -1,4 +1,4 @@
- using UnityEngine;
+using UnityEngine;
 using UnityEngine.InputSystem;
 
 public class PlayerController : MonoBehaviour
@@ -13,6 +13,8 @@ public class PlayerController : MonoBehaviour
     public float sprintSpeed = 8f;
 
     private bool isSprinting;
+
+    private bool sprintLockedUntilShiftRelease = false;
 
     public float gravity = -9.81f;
     public float mouseSensitivity = 100f;
@@ -40,10 +42,42 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
-        isSprinting =
-            Keyboard.current.leftShiftKey.isPressed &&
-            moveInput.y > 0 &&
-            playerStats.currentStamina > minStaminaToSprint;
+        bool shiftPressed =
+            Keyboard.current != null &&
+            Keyboard.current.leftShiftKey.isPressed;
+
+        if (sprintLockedUntilShiftRelease)
+        {
+            isSprinting = false;
+
+            if (!shiftPressed)
+            {
+                sprintLockedUntilShiftRelease = false;
+            }
+        }
+        else
+        {
+            bool wantsToSprint =
+                shiftPressed &&
+                moveInput.y > 0f;
+
+            if (wantsToSprint)
+            {
+                if (playerStats.currentStamina <= minStaminaToSprint)
+                {
+                    isSprinting = false;
+                    sprintLockedUntilShiftRelease = true;
+                }
+                else
+                {
+                    isSprinting = true;
+                }
+            }
+            else
+            {
+                isSprinting = false;
+            }
+        }
 
         Vector3 move =
             transform.right * moveInput.x +
@@ -52,38 +86,69 @@ public class PlayerController : MonoBehaviour
         float currentSpeed =
             isSprinting ? sprintSpeed : walkSpeed;
 
-        controller.Move(move * currentSpeed * Time.deltaTime);
+        controller.Move(
+            move * currentSpeed * Time.deltaTime
+        );
 
         if (isSprinting)
         {
             playerStats.UseStamina(
-                sprintStaminaCostPerSecond * Time.deltaTime
+                sprintStaminaCostPerSecond *
+                Time.deltaTime
             );
+
+            if (playerStats.currentStamina <= 0f)
+            {
+                playerStats.currentStamina = 0f;
+
+                isSprinting = false;
+
+                sprintLockedUntilShiftRelease = true;
+            }
         }
 
-        if (controller.isGrounded && velocity.y < 0)
+        if (controller.isGrounded &&
+            velocity.y < 0f)
         {
             velocity.y = -2f;
         }
 
         velocity.y += gravity * Time.deltaTime;
-        controller.Move(velocity * Time.deltaTime);
+
+        controller.Move(
+            velocity * Time.deltaTime
+        );
 
         if (lookEnabled)
         {
             float mouseX =
-                lookInput.x * mouseSensitivity * Time.deltaTime;
+                lookInput.x *
+                mouseSensitivity *
+                Time.deltaTime;
 
             float mouseY =
-                lookInput.y * mouseSensitivity * Time.deltaTime;
+                lookInput.y *
+                mouseSensitivity *
+                Time.deltaTime;
 
             xRotation -= mouseY;
-            xRotation = Mathf.Clamp(xRotation, -90f, 90f);
+
+            xRotation = Mathf.Clamp(
+                xRotation,
+                -90f,
+                90f
+            );
 
             cameraPivot.localRotation =
-                Quaternion.Euler(xRotation, 0f, 0f);
+                Quaternion.Euler(
+                    xRotation,
+                    0f,
+                    0f
+                );
 
-            transform.Rotate(Vector3.up * mouseX);
+            transform.Rotate(
+                Vector3.up * mouseX
+            );
         }
 
         float speed = moveInput.magnitude;
@@ -91,7 +156,13 @@ public class PlayerController : MonoBehaviour
         if (isSprinting)
             speed = 2f;
 
-        animator.SetFloat("Speed", speed);
+        if (animator != null)
+        {
+            animator.SetFloat(
+                "Speed",
+                speed
+            );
+        }
     }
 
     public void OnMove(InputValue value)
@@ -103,6 +174,7 @@ public class PlayerController : MonoBehaviour
     {
         lookInput = value.Get<Vector2>();
     }
+
     public void OnJump(InputValue value)
     {
         if (!value.isPressed)
@@ -111,11 +183,21 @@ public class PlayerController : MonoBehaviour
         if (!controller.isGrounded)
             return;
 
-        if (playerStats.currentStamina < jumpStaminaCost)
+        if (playerStats.currentStamina <
+            jumpStaminaCost)
+        {
             return;
+        }
 
-        playerStats.UseStamina(jumpStaminaCost);
+        playerStats.UseStamina(
+            jumpStaminaCost
+        );
 
-        velocity.y = Mathf.Sqrt(jumpHeight * -2f * gravity);
+        velocity.y =
+            Mathf.Sqrt(
+                jumpHeight *
+                -2f *
+                gravity
+            );
     }
 }

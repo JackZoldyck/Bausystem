@@ -29,6 +29,8 @@ public class PlayerStats : MonoBehaviour
     public float healthRegenPerSecond = 1f;
     public float staminaRegenWithFood = 10f;
     public float staminaRegenEmptyStomach = 4f;
+    public float staminaRegenDelay = 1f;
+    private float staminaRegenTimer = 0f;
 
     void Start()
     {
@@ -96,14 +98,42 @@ public class PlayerStats : MonoBehaviour
         if (hasFood)
             currentHealth += healthRegenPerSecond * Time.deltaTime;
 
+        if (staminaRegenTimer > 0f)
+        {
+            staminaRegenTimer -= Time.deltaTime;
+
+            currentHealth = Mathf.Clamp(
+                currentHealth,
+                0f,
+                GetMaxHealth()
+            );
+
+            currentStamina = Mathf.Clamp(
+                currentStamina,
+                0f,
+                GetMaxStamina()
+            );
+
+            return;
+        }
+
         float staminaRegen = hasFood
             ? staminaRegenWithFood
             : staminaRegenEmptyStomach;
 
         currentStamina += staminaRegen * Time.deltaTime;
 
-        currentHealth = Mathf.Clamp(currentHealth, 0f, GetMaxHealth());
-        currentStamina = Mathf.Clamp(currentStamina, 0f, GetMaxStamina());
+        currentHealth = Mathf.Clamp(
+            currentHealth,
+            0f,
+            GetMaxHealth()
+        );
+
+        currentStamina = Mathf.Clamp(
+            currentStamina,
+            0f,
+            GetMaxStamina()
+        );
     }
 
     public bool EatFood(ItemData foodItem)
@@ -145,6 +175,13 @@ public class PlayerStats : MonoBehaviour
     public void UseStamina(float amount)
     {
         currentStamina -= amount;
-        currentStamina = Mathf.Clamp(currentStamina, 0f, GetMaxStamina());
+
+        currentStamina = Mathf.Clamp(
+            currentStamina,
+            0f,
+            GetMaxStamina()
+        );
+
+        staminaRegenTimer = staminaRegenDelay;
     }
 }

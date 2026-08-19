@@ -9,6 +9,8 @@ public class ResourceHarvester : MonoBehaviour
     public BuildManager buildManager;
     public PlayerTool playerTool;
     public InventoryUI inventoryUI;
+    public PlayerZoomCamera playerZoomCamera;
+    public UIStateManager uiStateManager;
 
     [Header("Harvest Detection")]
     [Tooltip("Wie weit der Spieler tatsächlich an eine Ressource heranreichen kann.")]
@@ -21,16 +23,28 @@ public class ResourceHarvester : MonoBehaviour
     public LayerMask harvestMask = ~0;
 
     [Header("Hit Timing")]
-    public float axeHitDelay = 0.33f;
-    public float pickaxeHitDelay = 0.33f;
+    public float axeHitDelayFP = 0.15f;
+    public float axeHitDelayTP = 0.33f;
+
+    public float pickaxeHitDelayFP = 0.15f;
+    public float pickaxeHitDelayTP = 0.33f;
+
+    [Header("Perspective Resource Balance")]
+    [Tooltip("Ressourcenertrag in First Person.")]
+    public float firstPersonResourceMultiplier = 1f;
+
+    [Tooltip("Ressourcenertrag in Third Person.")]
+    public float thirdPersonResourceMultiplier = 1.25f;
+
+    private Coroutine harvestHitRoutine;
 
     void Update()
     {
         if (!Input.GetMouseButtonDown(0))
             return;
 
-        if (inventoryUI != null &&
-            inventoryUI.IsOpen())
+        if (uiStateManager != null &&
+            uiStateManager.IsAnyMenuOpen())
         {
             return;
         }
@@ -51,12 +65,15 @@ public class ResourceHarvester : MonoBehaviour
         TryHarvest();
     }
 
-    private Coroutine harvestHitRoutine;
-
     void TryHarvest()
     {
-        if (playerTool == null || playerCamera == null)
+        if (playerTool == null ||
+            playerCamera == null)
+        {
             return;
+        }
+
+        bool firstPerson = IsFirstPerson();
 
         if (playerTool.hasAxe)
         {
@@ -65,8 +82,15 @@ public class ResourceHarvester : MonoBehaviour
             if (harvestHitRoutine != null)
                 StopCoroutine(harvestHitRoutine);
 
+            float delay =
+                firstPerson
+                    ? axeHitDelayFP
+                    : axeHitDelayTP;
+
             harvestHitRoutine =
-                StartCoroutine(DelayedHarvestHit(axeHitDelay));
+                StartCoroutine(
+                    DelayedHarvestHit(delay)
+                );
         }
         else if (playerTool.hasPickaxe)
         {
@@ -75,8 +99,15 @@ public class ResourceHarvester : MonoBehaviour
             if (harvestHitRoutine != null)
                 StopCoroutine(harvestHitRoutine);
 
+            float delay =
+                firstPerson
+                    ? pickaxeHitDelayFP
+                    : pickaxeHitDelayTP;
+
             harvestHitRoutine =
-                StartCoroutine(DelayedHarvestHit(pickaxeHitDelay));
+                StartCoroutine(
+                    DelayedHarvestHit(delay)
+                );
         }
     }
 
@@ -91,10 +122,6 @@ public class ResourceHarvester : MonoBehaviour
 
     public void ApplyHarvestHit()
     {
-        Debug.Log(
-            $"HARVEST HIT | Objekt: {gameObject.name} | ID: {GetInstanceID()} | Frame: {Time.frameCount} | AxeDamage: {playerTool.axeDamage}"
-        );
-
         if (playerTool == null ||
             playerCamera == null)
         {
@@ -150,11 +177,27 @@ public class ResourceHarvester : MonoBehaviour
                 ? playerTool.axeDamage
                 : playerTool.pickaxeDamage;
 
+        bool firstPerson = IsFirstPerson();
+
+        float resourceMultiplier =
+            firstPerson
+                ? firstPersonResourceMultiplier
+                : thirdPersonResourceMultiplier;
+
         node.Harvest(
             inventory,
             damage,
             hit.point,
-            hit.normal
+            hit.normal,
+            resourceMultiplier
         );
+    }
+
+    private bool IsFirstPerson()
+    {
+        if (playerZoomCamera == null)
+            return true;
+
+        return playerZoomCamera.IsFirstPerson;
     }
 }
