@@ -3,48 +3,87 @@ using UnityEngine.InputSystem;
 
 public class PlayerController : MonoBehaviour
 {
+    [Header("References")]
     public CharacterController controller;
     public Transform cameraPivot;
     public PlayerStats playerStats;
+    public Animator animator;
+    public PlayerZoomCamera playerZoomCamera;
 
-    public bool lookEnabled = true;
-
+    [Header("Movement")]
     public float walkSpeed = 5f;
     public float sprintSpeed = 8f;
+    public float rotationSpeed = 12f;
 
-    private bool isSprinting;
-
-    private bool sprintLockedUntilShiftRelease = false;
-
-    public float gravity = -9.81f;
-    public float mouseSensitivity = 100f;
+    [Header("Jump")]
     public float jumpHeight = 1.5f;
-
-    public float minStaminaToSprint = 1f;
     public float jumpStaminaCost = 20f;
+
+    [Header("Stamina")]
+    public float minStaminaToSprint = 1f;
     public float sprintStaminaCostPerSecond = 18f;
 
-    public Animator animator;
+    [Header("Gravity")]
+    public float gravity = -9.81f;
+
+    [Header("Camera")]
+    public bool lookEnabled = true;
+    public float mouseSensitivity = 100f;
 
     private Vector2 moveInput;
     private Vector2 lookInput;
-    private Vector3 velocity;
-    private float xRotation;
 
-    void Start()
+    private Vector3 velocity;
+
+    private float xRotation;
+    private float thirdPersonCameraYaw;
+
+    private bool isSprinting;
+    private bool sprintLockedUntilShiftRelease;
+
+    private float airborneMoveSpeed;
+
+
+    private void Start()
     {
         if (controller == null)
-            controller = GetComponent<CharacterController>();
+        {
+            controller =
+                GetComponent<CharacterController>();
+        }
 
-        Cursor.lockState = CursorLockMode.Locked;
+        airborneMoveSpeed = walkSpeed;
+
+        if (cameraPivot != null)
+        {
+            thirdPersonCameraYaw =
+                cameraPivot.eulerAngles.y;
+        }
+
+        Cursor.lockState =
+            CursorLockMode.Locked;
+
         Cursor.visible = false;
     }
 
-    void Update()
+
+    private void Update()
     {
+        if (controller == null)
+            return;
+
+        bool firstPerson = true;
+
+        if (playerZoomCamera != null)
+        {
+            firstPerson =
+                playerZoomCamera.IsFirstPerson;
+        }
+
         bool shiftPressed =
             Keyboard.current != null &&
             Keyboard.current.leftShiftKey.isPressed;
+
 
         if (sprintLockedUntilShiftRelease)
         {
@@ -63,14 +102,16 @@ public class PlayerController : MonoBehaviour
 
             if (wantsToSprint)
             {
-                if (playerStats.currentStamina <= minStaminaToSprint)
+                if (playerStats != null &&
+                    playerStats.currentStamina >
+                    minStaminaToSprint)
                 {
-                    isSprinting = false;
-                    sprintLockedUntilShiftRelease = true;
+                    isSprinting = true;
                 }
                 else
                 {
-                    isSprinting = true;
+                    isSprinting = false;
+                    sprintLockedUntilShiftRelease = true;
                 }
             }
             else
@@ -79,30 +120,99 @@ public class PlayerController : MonoBehaviour
             }
         }
 
-        Vector3 move =
-            transform.right * moveInput.x +
-            transform.forward * moveInput.y;
+        Vector3 moveDirection;
 
-        float currentSpeed =
-            isSprinting ? sprintSpeed : walkSpeed;
+        if (firstPerson)
+        {
+            moveDirection =
+                transform.right * moveInput.x +
+                transform.forward * moveInput.y;
+        }
+        else
+        {
+            Vector3 cameraForward =
+                cameraPivot != null
+                    ? cameraPivot.forward
+                    : transform.forward;
+
+            Vector3 cameraRight =
+                cameraPivot != null
+                    ? cameraPivot.right
+                    : transform.right;
+
+            cameraForward.y = 0f;
+            cameraRight.y = 0f;
+
+            cameraForward.Normalize();
+            cameraRight.Normalize();
+
+            moveDirection =
+                cameraForward * moveInput.y +
+                cameraRight * moveInput.x;
+        }
+
+
+        if (moveDirection.sqrMagnitude > 1f)
+        {
+            moveDirection.Normalize();
+        }
+
+        float currentSpeed;
+
+        if (controller.isGrounded)
+        {
+            currentSpeed =
+                isSprinting
+                    ? sprintSpeed
+                    : walkSpeed;
+
+            airborneMoveSpeed =
+                currentSpeed;
+        }
+        else
+        {
+            currentSpeed =
+                airborneMoveSpeed;
+        }
+
+        if (!firstPerson &&
+            moveDirection.sqrMagnitude > 0.01f)
+        {
+            Quaternion targetRotation =
+                Quaternion.LookRotation(
+                    moveDirection
+                );
+
+            transform.rotation =
+                Quaternion.Slerp(
+                    transform.rotation,
+                    targetRotation,
+                    rotationSpeed *
+                    Time.deltaTime
+                );
+        }
 
         controller.Move(
-            move * currentSpeed * Time.deltaTime
+            moveDirection *
+            currentSpeed *
+            Time.deltaTime
         );
 
-        if (isSprinting)
+        if (isSprinting &&
+            controller.isGrounded &&
+            playerStats != null)
         {
             playerStats.UseStamina(
                 sprintStaminaCostPerSecond *
                 Time.deltaTime
             );
 
-            if (playerStats.currentStamina <= 0f)
+            if (playerStats.currentStamina <=
+                minStaminaToSprint)
             {
                 playerStats.currentStamina = 0f;
 
                 isSprinting = false;
-
                 sprintLockedUntilShiftRelease = true;
             }
         }
@@ -113,13 +223,16 @@ public class PlayerController : MonoBehaviour
             velocity.y = -2f;
         }
 
-        velocity.y += gravity * Time.deltaTime;
+        velocity.y +=
+            gravity * Time.deltaTime;
 
         controller.Move(
-            velocity * Time.deltaTime
+            velocity *
+            Time.deltaTime
         );
 
-        if (lookEnabled)
+        if (lookEnabled &&
+            cameraPivot != null)
         {
             float mouseX =
                 lookInput.x *
@@ -131,56 +244,96 @@ public class PlayerController : MonoBehaviour
                 mouseSensitivity *
                 Time.deltaTime;
 
+
             xRotation -= mouseY;
 
-            xRotation = Mathf.Clamp(
-                xRotation,
-                -90f,
-                90f
-            );
-
-            cameraPivot.localRotation =
-                Quaternion.Euler(
+            xRotation =
+                Mathf.Clamp(
                     xRotation,
-                    0f,
-                    0f
+                    -90f,
+                    90f
                 );
 
-            transform.Rotate(
-                Vector3.up * mouseX
-            );
+
+            if (firstPerson)
+            {
+                cameraPivot.localRotation =
+                    Quaternion.Euler(
+                        xRotation,
+                        0f,
+                        0f
+                    );
+
+                transform.Rotate(
+                    Vector3.up *
+                    mouseX
+                );
+
+                thirdPersonCameraYaw =
+                    transform.eulerAngles.y;
+            }
+            else
+            {
+                thirdPersonCameraYaw +=
+                    mouseX;
+
+                cameraPivot.rotation =
+                    Quaternion.Euler(
+                        xRotation,
+                        thirdPersonCameraYaw,
+                        0f
+                    );
+            }
         }
-
-        float speed = moveInput.magnitude;
-
-        if (isSprinting)
-            speed = 2f;
 
         if (animator != null)
         {
+            float animationSpeed =
+                moveInput.magnitude;
+
+            if (isSprinting)
+            {
+                animationSpeed = 2f;
+            }
+
             animator.SetFloat(
                 "Speed",
-                speed
+                animationSpeed
+            );
+
+            animator.SetBool(
+                "IsGrounded",
+                controller.isGrounded
             );
         }
     }
 
     public void OnMove(InputValue value)
     {
-        moveInput = value.Get<Vector2>();
+        moveInput =
+            value.Get<Vector2>();
     }
+
 
     public void OnLook(InputValue value)
     {
-        lookInput = value.Get<Vector2>();
+        lookInput =
+            value.Get<Vector2>();
     }
+
 
     public void OnJump(InputValue value)
     {
         if (!value.isPressed)
             return;
 
-        if (!controller.isGrounded)
+        if (controller == null ||
+            !controller.isGrounded)
+        {
+            return;
+        }
+
+        if (playerStats == null)
             return;
 
         if (playerStats.currentStamina <
@@ -189,9 +342,17 @@ public class PlayerController : MonoBehaviour
             return;
         }
 
+
         playerStats.UseStamina(
             jumpStaminaCost
         );
+
+
+        airborneMoveSpeed =
+            isSprinting
+                ? sprintSpeed
+                : walkSpeed;
+
 
         velocity.y =
             Mathf.Sqrt(
@@ -199,5 +360,11 @@ public class PlayerController : MonoBehaviour
                 -2f *
                 gravity
             );
+
+
+        if (animator != null)
+        {
+            animator.SetTrigger("Jump");
+        }
     }
 }

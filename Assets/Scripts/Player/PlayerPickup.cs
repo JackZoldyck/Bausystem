@@ -25,6 +25,7 @@ public class PlayerPickup : MonoBehaviour
     private LayerMask detectionMask = ~0;
 
     private PickupItem currentPickup;
+    private BerryBushHarvest currentBerryBush;
 
     private void Update()
     {
@@ -36,7 +37,21 @@ public class PlayerPickup : MonoBehaviour
             PickupItem pickupToCollect = currentPickup;
 
             ClearCurrentPickup();
+
             pickupToCollect.Pickup(inventoryGrid);
+
+            return;
+        }
+
+        if (currentBerryBush != null &&
+            Input.GetKeyDown(KeyCode.E))
+        {
+            BerryBushHarvest bushToHarvest =
+                currentBerryBush;
+
+            ClearCurrentPickup();
+
+            bushToHarvest.Harvest(inventoryGrid);
         }
     }
 
@@ -53,7 +68,7 @@ public class PlayerPickup : MonoBehaviour
             playerCamera.transform.forward
         );
 
-        if (Physics.SphereCast(
+        if (!Physics.SphereCast(
             ray,
             sphereCastRadius,
             out RaycastHit hit,
@@ -61,45 +76,89 @@ public class PlayerPickup : MonoBehaviour
             detectionMask,
             QueryTriggerInteraction.Collide))
         {
-            PickupItem pickup =
-                hit.collider.GetComponentInParent<PickupItem>();
+            ClearCurrentPickup();
+            return;
+        }
 
-            if (pickup != null)
+        PickupItem pickup =
+            hit.collider.GetComponentInParent<PickupItem>();
+
+        if (pickup != null)
+        {
+            float distanceFromPlayer =
+                Vector3.Distance(
+                    transform.position,
+                    pickup.transform.position
+                );
+
+            if (distanceFromPlayer <= pickupRange)
             {
-                float distanceFromPlayer =
-                    Vector3.Distance(
-                        transform.position,
-                        pickup.transform.position
-                    );
-
-                if (distanceFromPlayer <= pickupRange)
-                {
-                    SetCurrentPickup(pickup);
-                    return;
-                }
+                SetCurrentPickup(pickup);
+                return;
             }
         }
 
+        BerryBushHarvest berryBush =
+            hit.collider.GetComponentInParent<BerryBushHarvest>();
+
+        if (berryBush != null &&
+            berryBush.HasBerries())
+        {
+            float distanceFromPlayer =
+                Vector3.Distance(
+                    transform.position,
+                    berryBush.transform.position
+                );
+
+            if (distanceFromPlayer <= pickupRange)
+            {
+                SetCurrentBerryBush(berryBush);
+                return;
+            }
+        }
+
+        // Nichts Interaktives gefunden
         ClearCurrentPickup();
     }
 
     private void SetCurrentPickup(PickupItem pickup)
     {
+        currentBerryBush = null;
         currentPickup = pickup;
 
         if (pickupPromptText == null)
             return;
 
-        pickupPromptText.text = pickup.GetPromptText();
+        pickupPromptText.text =
+            pickup.GetPromptText();
+
+        pickupPromptText.gameObject.SetActive(true);
+    }
+
+    private void SetCurrentBerryBush(
+        BerryBushHarvest berryBush)
+    {
+        currentPickup = null;
+        currentBerryBush = berryBush;
+
+        if (pickupPromptText == null)
+            return;
+
+        pickupPromptText.text =
+            berryBush.GetPromptText();
+
         pickupPromptText.gameObject.SetActive(true);
     }
 
     private void ClearCurrentPickup()
     {
         currentPickup = null;
+        currentBerryBush = null;
 
         if (pickupPromptText != null)
+        {
             pickupPromptText.gameObject.SetActive(false);
+        }
     }
 
     private void OnDrawGizmosSelected()
@@ -109,7 +168,8 @@ public class PlayerPickup : MonoBehaviour
 
         Gizmos.DrawWireSphere(
             playerCamera.transform.position +
-            playerCamera.transform.forward * cameraSearchRange,
+            playerCamera.transform.forward *
+            cameraSearchRange,
             sphereCastRadius
         );
     }

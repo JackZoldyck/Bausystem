@@ -20,6 +20,7 @@ public class WorldSpawner : MonoBehaviour
     public GameObject branchPrefab;
     public GameObject stonePrefab;
     public GameObject mushroomPrefab;
+    public GameObject berryBushPrefab;
 
     [Header("Height Offsets")]
     public float treeYOffset = 0f;
@@ -27,6 +28,7 @@ public class WorldSpawner : MonoBehaviour
     public float branchYOffset = 0.15f;
     public float stoneYOffset = 0.15f;
     public float mushroomYOffset = 0f;
+    public float berryBushYOffset = 0f;
 
     [Header("Spawn Counts")]
     public int minTrees = 20;
@@ -76,6 +78,31 @@ public class WorldSpawner : MonoBehaviour
     private float minimumTreeDistance = 2.5f;
 
     [SerializeField, Min(1)]
+
+    [Header("Berry Bush Generation")]
+
+    [Tooltip("Wie viele Berry-Cluster in der Welt erzeugt werden sollen.")]
+    public int minBerryClusters = 12;
+    public int maxBerryClusters = 20;
+
+    [Tooltip("Anzahl Büsche innerhalb eines Clusters.")]
+    public int minBerryBushesPerCluster = 3;
+    public int maxBerryBushesPerCluster = 6;
+
+    [Tooltip("Radius eines einzelnen Berry-Clusters.")]
+    public float berryClusterRadius = 5f;
+
+    [Tooltip("In diesem Radius wird die Baumdichte geprüft.")]
+    public float berryTreeCheckRadius = 15f;
+
+    [Tooltip("Maximal erlaubte Anzahl Bäume im Prüfradius.")]
+    public int maxTreesNearBerryCluster = 4;
+
+    [Tooltip("Mindestabstand zwischen einzelnen Berry Bushes.")]
+    public float minimumBerryBushDistance = 1.5f;
+
+    [Tooltip("Wie oft nach einem geeigneten Clusterplatz gesucht wird.")]
+    public int berryClusterPlacementAttempts = 30;
     private int attemptsPerTree = 8;
 
     public float branchMinDistanceFromTree = 2f;
@@ -130,6 +157,7 @@ public class WorldSpawner : MonoBehaviour
         );
 
         SpawnMushrooms();
+        SpawnBerryBushClusters();
     }
 
     private void SpawnTrees()
@@ -491,6 +519,183 @@ public class WorldSpawner : MonoBehaviour
             mushroomMaxDistance,
             SurfaceAlignment.Upright
         );
+    }
+
+    private void SpawnBerryBushClusters()
+    {
+        if (berryBushPrefab == null)
+        {
+            Debug.LogWarning(
+                "WorldSpawner: Kein Berry Bush Prefab zugewiesen.",
+                this
+            );
+
+            return;
+        }
+
+        int targetClusterCount = Random.Range(
+            minBerryClusters,
+            maxBerryClusters + 1
+        );
+
+        int spawnedClusters = 0;
+        int attempts = 0;
+
+        int maximumAttempts =
+            targetClusterCount * berryClusterPlacementAttempts;
+
+        List<Vector3> berryBushPositions = new();
+
+        while (
+            spawnedClusters < targetClusterCount &&
+            attempts < maximumAttempts
+        )
+        {
+            attempts++;
+
+            Vector3 clusterCenter =
+                GetRandomPosition();
+
+            // Cluster nur dort zulassen,
+            // wo nicht zu viele Bäume stehen.
+            if (!IsGoodBerryClusterPosition(clusterCenter))
+                continue;
+
+            int bushCount = Random.Range(
+                minBerryBushesPerCluster,
+                maxBerryBushesPerCluster + 1
+            );
+
+            int spawnedInCluster = 0;
+
+            for (int i = 0; i < bushCount; i++)
+            {
+                const int bushPlacementAttempts = 10;
+
+                for (
+                    int bushAttempt = 0;
+                    bushAttempt < bushPlacementAttempts;
+                    bushAttempt++
+                )
+                {
+                    Vector2 offset =
+                        Random.insideUnitCircle *
+                        berryClusterRadius;
+
+                    Vector3 position =
+                        clusterCenter +
+                        new Vector3(
+                            offset.x,
+                            0f,
+                            offset.y
+                        );
+
+                    if (!IsInsideTerrainBounds(position))
+                        continue;
+
+                    if (!IsFarEnoughFromBerryBushes(
+                        position,
+                        berryBushPositions))
+                    {
+                        continue;
+                    }
+
+                    position = PlaceOnTerrain(
+                        position,
+                        berryBushYOffset
+                    );
+
+                    Spawn(
+                        berryBushPrefab,
+                        position,
+                        SurfaceAlignment.Upright
+                    );
+
+                    berryBushPositions.Add(position);
+
+                    spawnedInCluster++;
+
+                    break;
+                }
+            }
+
+            // Nur als erfolgreicher Cluster zählen,
+            // wenn wenigstens ein Busch gespawnt wurde.
+            if (spawnedInCluster > 0)
+                spawnedClusters++;
+        }
+
+        Debug.Log(
+            $"WorldSpawner: {berryBushPositions.Count} Berry Bushes " +
+            $"in {spawnedClusters} Clustern erzeugt.",
+            this
+        );
+    }
+
+    private bool IsGoodBerryClusterPosition(
+    Vector3 position)
+    {
+        int nearbyTrees = 0;
+
+        float checkRadiusSquared =
+            berryTreeCheckRadius *
+            berryTreeCheckRadius;
+
+        foreach (Vector3 treePosition in treePositions)
+        {
+            float deltaX =
+                position.x - treePosition.x;
+
+            float deltaZ =
+                position.z - treePosition.z;
+
+            float distanceSquared =
+                deltaX * deltaX +
+                deltaZ * deltaZ;
+
+            if (distanceSquared <= checkRadiusSquared)
+            {
+                nearbyTrees++;
+
+                if (nearbyTrees >
+                    maxTreesNearBerryCluster)
+                {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    private bool IsFarEnoughFromBerryBushes(
+    Vector3 position,
+    List<Vector3> existingBushes)
+    {
+        float minimumDistanceSquared =
+            minimumBerryBushDistance *
+            minimumBerryBushDistance;
+
+        foreach (Vector3 bushPosition in existingBushes)
+        {
+            float deltaX =
+                position.x - bushPosition.x;
+
+            float deltaZ =
+                position.z - bushPosition.z;
+
+            float distanceSquared =
+                deltaX * deltaX +
+                deltaZ * deltaZ;
+
+            if (distanceSquared <
+                minimumDistanceSquared)
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     private void SpawnNearAnchors(

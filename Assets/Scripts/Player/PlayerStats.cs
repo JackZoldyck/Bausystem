@@ -138,6 +138,10 @@ public class PlayerStats : MonoBehaviour
 
     public bool EatFood(ItemData foodItem)
     {
+        Debug.Log(
+        $"FOOD | Active: {activeFoods.Count} | Max: {GetMaxFoodSlots()} | Item: {foodItem?.name}"
+        );
+
         if (foodItem == null || foodItem.itemType != ItemType.Food)
             return false;
 
@@ -151,6 +155,16 @@ public class PlayerStats : MonoBehaviour
         activeFood.remainingTime = foodItem.foodDuration;
 
         activeFoods.Add(activeFood);
+
+        Debug.Log($"=== ACTIVE FOODS: {activeFoods.Count} ===");
+
+        for (int i = 0; i < activeFoods.Count; i++)
+        {
+            Debug.Log(
+                $"Slot {i}: {activeFoods[i].item.itemName} | " +
+                $"Zeit: {activeFoods[i].remainingTime}"
+            );
+        }
 
         currentHealth = Mathf.Clamp(
             currentHealth + foodItem.healthBonus,
