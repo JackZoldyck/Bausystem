@@ -43,6 +43,10 @@ public class PlayerController : MonoBehaviour
 
     private float airborneMoveSpeed;
 
+    private float movementReferenceYaw;
+    private Vector3 lockedThirdPersonMoveDirection;
+    private Vector2 previousMoveInput;
+
 
     private void Start()
     {
@@ -131,26 +135,96 @@ public class PlayerController : MonoBehaviour
         else
         {
             Vector3 cameraForward =
-                cameraPivot != null
-                    ? cameraPivot.forward
-                    : transform.forward;
-
-            Vector3 cameraRight =
-                cameraPivot != null
-                    ? cameraPivot.right
-                    : transform.right;
+                cameraPivot.forward;
 
             cameraForward.y = 0f;
-            cameraRight.y = 0f;
-
             cameraForward.Normalize();
-            cameraRight.Normalize();
 
-            moveDirection =
-                cameraForward * moveInput.y +
-                cameraRight * moveInput.x;
+            bool hasMovementInput =
+                moveInput.sqrMagnitude > 0.01f;
+
+            if (!hasMovementInput)
+            {
+                moveDirection = Vector3.zero;
+
+                lockedThirdPersonMoveDirection =
+                    Vector3.zero;
+            }
+            else
+            {
+                // W:
+                // Immer live in aktuelle Kamerablickrichtung.
+                if (moveInput.y > 0f &&
+                    Mathf.Abs(moveInput.x) < 0.01f)
+                {
+                    moveDirection =
+                        cameraForward;
+
+                    lockedThirdPersonMoveDirection =
+                        Vector3.zero;
+                }
+                else
+                {
+                    // A / S / D:
+                    // Richtung nur beim Beginn bzw.
+                    // bei geändertem Input neu bestimmen.
+                    bool movementStarted =
+                        previousMoveInput.sqrMagnitude <= 0.01f;
+
+                    bool inputChanged =
+                        Vector2.Distance(
+                            moveInput.normalized,
+                            previousMoveInput.normalized
+                        ) > 0.1f;
+
+                    if (movementStarted ||
+                        inputChanged ||
+                        lockedThirdPersonMoveDirection.sqrMagnitude < 0.01f)
+                    {
+                        float angleOffset =
+                            Mathf.Atan2(
+                                moveInput.x,
+                                moveInput.y
+                            ) * Mathf.Rad2Deg;
+
+                        Quaternion directionRotation =
+                            Quaternion.AngleAxis(
+                                angleOffset,
+                                Vector3.up
+                            );
+
+                        lockedThirdPersonMoveDirection =
+                            directionRotation *
+                            cameraForward;
+
+                        lockedThirdPersonMoveDirection.Normalize();
+                    }
+
+                    moveDirection =
+                        lockedThirdPersonMoveDirection;
+                }
+
+                if (moveDirection.sqrMagnitude > 0.01f)
+                {
+                    Quaternion targetRotation =
+                        Quaternion.LookRotation(
+                            moveDirection
+                        );
+
+                    transform.rotation =
+                        Quaternion.Slerp(
+                            transform.rotation,
+                            targetRotation,
+                            rotationSpeed *
+                            Time.deltaTime
+                        );
+                }
+            }
         }
 
+        previousMoveInput = moveInput;
+
+        previousMoveInput = moveInput;
 
         if (moveDirection.sqrMagnitude > 1f)
         {
@@ -173,23 +247,6 @@ public class PlayerController : MonoBehaviour
         {
             currentSpeed =
                 airborneMoveSpeed;
-        }
-
-        if (!firstPerson &&
-            moveDirection.sqrMagnitude > 0.01f)
-        {
-            Quaternion targetRotation =
-                Quaternion.LookRotation(
-                    moveDirection
-                );
-
-            transform.rotation =
-                Quaternion.Slerp(
-                    transform.rotation,
-                    targetRotation,
-                    rotationSpeed *
-                    Time.deltaTime
-                );
         }
 
         controller.Move(

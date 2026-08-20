@@ -9381,7 +9381,7 @@ MonoBehaviour:
   playerZoomCamera: {fileID: 1598376916}
   walkSpeed: 5
   sprintSpeed: 12
-  rotationSpeed: 12
+  rotationSpeed: 17
   jumpHeight: 1.5
   jumpStaminaCost: 20
   minStaminaToSprint: 1
