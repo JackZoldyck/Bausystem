@@ -7046,7 +7046,7 @@ GameObject:
   m_Component:
   - component: {fileID: 678269764}
   - component: {fileID: 678269763}
-  m_Layer: 0
+  m_Layer: 12
   m_Name: WorldSpawner
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -9383,12 +9383,21 @@ MonoBehaviour:
   sprintSpeed: 12
   rotationSpeed: 17
   jumpHeight: 1.5
-  jumpStaminaCost: 20
+  jumpStaminaCost: 10
   minStaminaToSprint: 1
-  sprintStaminaCostPerSecond: 18
+  sprintStaminaCostPerSecond: 7
   gravity: -12
   lookEnabled: 1
   mouseSensitivity: 15
+  groundMask:
+    serializedVersion: 2
+    m_Bits: 4096
+  groundCheckDistance: 0.2
+  groundCheckRadius: 0.3
+  airControlStrength: 4
+  airBrakeStrength: 20
+  minimumAirSpeedMultiplier: 0.2
+  airRotationMultiplier: 0.1
 --- !u!136 &1598376904
 CapsuleCollider:
   m_ObjectHideFlags: 0

@@ -30,6 +30,19 @@ public class PlayerController : MonoBehaviour
     public bool lookEnabled = true;
     public float mouseSensitivity = 100f;
 
+    [Header("Ground Check")]
+    public LayerMask groundMask;
+    public float groundCheckDistance = 0.2f;
+    public float groundCheckRadius = 0.3f;
+
+    [Header("Air Control")]
+    public float airControlStrength = 2f;
+    public float airBrakeStrength = 3f;
+    public float minimumAirSpeedMultiplier = 0.35f;
+
+    [Range(0f, 1f)]
+    public float airRotationMultiplier = 0.3f;
+
     private Vector2 moveInput;
     private Vector2 lookInput;
 
@@ -42,6 +55,7 @@ public class PlayerController : MonoBehaviour
     private bool sprintLockedUntilShiftRelease;
 
     private float airborneMoveSpeed;
+    private Vector3 airborneMoveDirection;
 
     private float movementReferenceYaw;
     private Vector3 lockedThirdPersonMoveDirection;
@@ -152,8 +166,6 @@ public class PlayerController : MonoBehaviour
             }
             else
             {
-                // W:
-                // Immer live in aktuelle Kamerablickrichtung.
                 if (moveInput.y > 0f &&
                     Mathf.Abs(moveInput.x) < 0.01f)
                 {
@@ -165,9 +177,6 @@ public class PlayerController : MonoBehaviour
                 }
                 else
                 {
-                    // A / S / D:
-                    // Richtung nur beim Beginn bzw.
-                    // bei geändertem Input neu bestimmen.
                     bool movementStarted =
                         previousMoveInput.sqrMagnitude <= 0.01f;
 
@@ -211,11 +220,16 @@ public class PlayerController : MonoBehaviour
                             moveDirection
                         );
 
+                    float currentRotationSpeed =
+                        controller.isGrounded
+                            ? rotationSpeed
+                            : rotationSpeed * airRotationMultiplier;
+
                     transform.rotation =
                         Quaternion.Slerp(
                             transform.rotation,
                             targetRotation,
-                            rotationSpeed *
+                            currentRotationSpeed *
                             Time.deltaTime
                         );
                 }
@@ -231,9 +245,45 @@ public class PlayerController : MonoBehaviour
             moveDirection.Normalize();
         }
 
+        bool wasGrounded =
+            controller.isGrounded;
+
+        if (wasGrounded)
+        {
+            airborneMoveDirection = moveDirection;
+        }
+        else
+        {
+            if (Mathf.Abs(moveInput.x) > 0.01f)
+            {
+                Vector3 sideDirection =
+                    transform.right * moveInput.x;
+
+                airborneMoveDirection =
+                    Vector3.Lerp(
+                        airborneMoveDirection,
+                        (airborneMoveDirection + sideDirection).normalized,
+                        airControlStrength * Time.deltaTime
+                    );
+            }
+
+            if (moveInput.y < -0.01f)
+            {
+                airborneMoveSpeed =
+                    Mathf.MoveTowards(
+                        airborneMoveSpeed,
+                        walkSpeed * minimumAirSpeedMultiplier,
+                        airBrakeStrength * Time.deltaTime
+                    );
+            }
+
+            moveDirection = airborneMoveDirection;
+        }
+
+
         float currentSpeed;
 
-        if (controller.isGrounded)
+        if (wasGrounded)
         {
             currentSpeed =
                 isSprinting
@@ -249,14 +299,39 @@ public class PlayerController : MonoBehaviour
                 airborneMoveSpeed;
         }
 
-        controller.Move(
-            moveDirection *
-            currentSpeed *
-            Time.deltaTime
-        );
+        if (wasGrounded &&
+            velocity.y < 0f)
+        {
+            velocity.y = -2f;
+        }
+
+        velocity.y +=
+            gravity * Time.deltaTime;
+
+        Vector3 finalMovement =
+            moveDirection * currentSpeed;
+
+        finalMovement.y =
+            velocity.y;
+
+        CollisionFlags collisionFlags =
+            controller.Move(
+                finalMovement *
+                Time.deltaTime
+            );
+
+        bool isGrounded =
+            (collisionFlags &
+             CollisionFlags.Below) != 0;
+
+        if (isGrounded &&
+            velocity.y < 0f)
+        {
+            velocity.y = -2f;
+        }
 
         if (isSprinting &&
-            controller.isGrounded &&
+            isGrounded &&
             playerStats != null)
         {
             playerStats.UseStamina(
@@ -273,20 +348,6 @@ public class PlayerController : MonoBehaviour
                 sprintLockedUntilShiftRelease = true;
             }
         }
-
-        if (controller.isGrounded &&
-            velocity.y < 0f)
-        {
-            velocity.y = -2f;
-        }
-
-        velocity.y +=
-            gravity * Time.deltaTime;
-
-        controller.Move(
-            velocity *
-            Time.deltaTime
-        );
 
         if (lookEnabled &&
             cameraPivot != null)
@@ -361,7 +422,7 @@ public class PlayerController : MonoBehaviour
             animator.SetBool(
                 "IsGrounded",
                 controller.isGrounded
-            );
+);
         }
     }
 
@@ -423,5 +484,34 @@ public class PlayerController : MonoBehaviour
         {
             animator.SetTrigger("Jump");
         }
+    }
+
+    private bool IsActuallyGrounded()
+    {
+        if (controller == null)
+            return false;
+
+        if (controller.isGrounded)
+            return true;
+
+        Vector3 origin =
+            transform.position +
+            controller.center;
+
+        float bottomOffset =
+            (controller.height * 0.5f) -
+            controller.radius;
+
+        origin.y -= bottomOffset;
+
+        return Physics.SphereCast(
+            origin,
+            groundCheckRadius,
+            Vector3.down,
+            out RaycastHit hit,
+            groundCheckDistance,
+            groundMask,
+            QueryTriggerInteraction.Ignore
+        );
     }
 }
