@@ -11,7 +11,7 @@ PrefabInstance:
     - target: {fileID: -8679921383154817045, guid: d2c550c8d26003840a74207a7ba4898f,
         type: 3}
       propertyPath: m_LocalScale.x
-      value: 20
+      value: 15
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: d2c550c8d26003840a74207a7ba4898f,
         type: 3}
@@ -21,22 +21,22 @@ PrefabInstance:
     - target: {fileID: -8679921383154817045, guid: d2c550c8d26003840a74207a7ba4898f,
         type: 3}
       propertyPath: m_LocalScale.z
-      value: 20
+      value: 15
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: d2c550c8d26003840a74207a7ba4898f,
         type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0.225
+      value: -2.2086856
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: d2c550c8d26003840a74207a7ba4898f,
         type: 3}
       propertyPath: m_LocalPosition.y
-      value: 1.62
+      value: 1.723114
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: d2c550c8d26003840a74207a7ba4898f,
         type: 3}
       propertyPath: m_LocalPosition.z
-      value: 0.6435977
+      value: 0.30498862
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: d2c550c8d26003840a74207a7ba4898f,
         type: 3}
@@ -73,10 +73,15 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: -7511558181221131132, guid: d2c550c8d26003840a74207a7ba4898f,
+        type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 79e3ce544cf420644abf8912631b44d6, type: 2}
     - target: {fileID: 919132149155446097, guid: d2c550c8d26003840a74207a7ba4898f,
         type: 3}
       propertyPath: m_Name
-      value: Grass
+      value: Grass_01
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

@@ -11,7 +11,6 @@ public class WorldSpawner : MonoBehaviour
 
     [Header("Ground")]
     [SerializeField] private Terrain terrain;
-
     [SerializeField] private VegetationMap vegetationMap;
 
     [Header("Prefabs")]
@@ -31,9 +30,6 @@ public class WorldSpawner : MonoBehaviour
     public float berryBushYOffset = 0f;
 
     [Header("Spawn Counts")]
-    public int minTrees = 20;
-    public int maxTrees = 40;
-
     public int minRocks = 10;
     public int maxRocks = 20;
 
@@ -46,7 +42,6 @@ public class WorldSpawner : MonoBehaviour
     public int minMushrooms = 10;
     public int maxMushrooms = 20;
 
-    [Header("Biome Rules")]
     [Header("Forest Generation")]
     [SerializeField] private int worldSeed = 12345;
 
@@ -78,33 +73,48 @@ public class WorldSpawner : MonoBehaviour
     private float minimumTreeDistance = 2.5f;
 
     [SerializeField, Min(1)]
+    private int attemptsPerTree = 8;
 
     [Header("Berry Bush Generation")]
-
-    [Tooltip("Wie viele Berry-Cluster in der Welt erzeugt werden sollen.")]
     public int minBerryClusters = 12;
     public int maxBerryClusters = 20;
 
-    [Tooltip("Anzahl Büsche innerhalb eines Clusters.")]
     public int minBerryBushesPerCluster = 3;
     public int maxBerryBushesPerCluster = 6;
 
-    [Tooltip("Radius eines einzelnen Berry-Clusters.")]
     public float berryClusterRadius = 5f;
-
-    [Tooltip("In diesem Radius wird die Baumdichte geprüft.")]
     public float berryTreeCheckRadius = 15f;
-
-    [Tooltip("Maximal erlaubte Anzahl Bäume im Prüfradius.")]
     public int maxTreesNearBerryCluster = 4;
 
-    [Tooltip("Mindestabstand zwischen einzelnen Berry Bushes.")]
     public float minimumBerryBushDistance = 1.5f;
-
-    [Tooltip("Wie oft nach einem geeigneten Clusterplatz gesucht wird.")]
     public int berryClusterPlacementAttempts = 30;
-    private int attemptsPerTree = 8;
 
+    [Header("Terrain Grass")]
+    [Min(0)]
+    public int grassDetailLayer1 = 0;
+
+    [Min(0)]
+    public int maxGrassDensityPerCell = 500;
+
+    [Range(0f, 60f)]
+    public float maxGrassSlope = 30f;
+
+    [Range(0f, 1f)]
+    public float grassDensityVariation = 0.1f;
+
+    [Min(0.1f)]
+    public float grassTreeCheckRadius = 12f;
+
+    [Min(0)]
+    public int grassSuppressionStartTreeCount = 2;
+
+    [Min(1)]
+    public int grassFullSuppressionTreeCount = 8;
+
+    [Range(0f, 1f)]
+    public float denseForestGrassMultiplier = 0.03f;
+
+    [Header("Placement Rules")]
     public float branchMinDistanceFromTree = 2f;
     public float branchMaxDistanceFromTree = 10f;
 
@@ -129,6 +139,11 @@ public class WorldSpawner : MonoBehaviour
     {
         if (terrain == null)
         {
+            Debug.LogError(
+                "WorldSpawner: Kein Terrain gefunden.",
+                this
+            );
+
             enabled = false;
             return;
         }
@@ -158,6 +173,7 @@ public class WorldSpawner : MonoBehaviour
 
         SpawnMushrooms();
         SpawnBerryBushClusters();
+        GenerateTerrainGrass();
     }
 
     private void SpawnTrees()
@@ -190,13 +206,15 @@ public class WorldSpawner : MonoBehaviour
         Vector3 terrainSize =
             terrain.terrainData.size;
 
-        int cellsX = Mathf.CeilToInt(
-            terrainSize.x / forestCellSize
-        );
+        int cellsX =
+            Mathf.CeilToInt(
+                terrainSize.x / forestCellSize
+            );
 
-        int cellsZ = Mathf.CeilToInt(
-            terrainSize.z / forestCellSize
-        );
+        int cellsZ =
+            Mathf.CeilToInt(
+                terrainSize.z / forestCellSize
+            );
 
         for (int cellX = 0; cellX < cellsX; cellX++)
         {
@@ -217,63 +235,77 @@ public class WorldSpawner : MonoBehaviour
     }
 
     private void TrySpawnForest(
-    int cellX,
-    int cellZ,
-    Vector3 terrainPosition)
+        int cellX,
+        int cellZ,
+        Vector3 terrainPosition)
     {
-        int cellSeed = CombineSeed(
-            worldSeed,
-            cellX,
-            cellZ
-        );
+        int cellSeed =
+            CombineSeed(
+                worldSeed,
+                cellX,
+                cellZ
+            );
 
         System.Random random =
             new System.Random(cellSeed);
 
-        if (NextFloat(random) > forestCenterChance)
+        if (NextFloat(random) >
+            forestCenterChance)
+        {
             return;
+        }
 
         float cellStartX =
-            terrainPosition.x
-            + cellX * forestCellSize;
+            terrainPosition.x +
+            cellX * forestCellSize;
 
         float cellStartZ =
-            terrainPosition.z
-            + cellZ * forestCellSize;
+            terrainPosition.z +
+            cellZ * forestCellSize;
 
         float centerX =
-            cellStartX
-            + NextFloat(random) * forestCellSize;
+            cellStartX +
+            NextFloat(random) *
+            forestCellSize;
 
         float centerZ =
-            cellStartZ
-            + NextFloat(random) * forestCellSize;
+            cellStartZ +
+            NextFloat(random) *
+            forestCellSize;
 
-        Vector3 center = new Vector3(
-            centerX,
-            0f,
-            centerZ
-        );
+        Vector3 center =
+            new Vector3(
+                centerX,
+                0f,
+                centerZ
+            );
 
         if (!IsInsideTerrainBounds(center))
             return;
 
         float centerDensity =
-            vegetationMap.GetForestDensity(center);
+            vegetationMap.GetForestDensity(
+                center
+            );
 
-        if (centerDensity < minimumCenterDensity)
+        if (centerDensity <
+            minimumCenterDensity)
+        {
             return;
+        }
 
-        float radius = Mathf.Lerp(
-            minimumForestRadius,
-            maximumForestRadius,
-            NextFloat(random)
-        );
+        float radius =
+            Mathf.Lerp(
+                minimumForestRadius,
+                maximumForestRadius,
+                NextFloat(random)
+            );
 
-        int treeCount = random.Next(
-            minimumTreesPerForest,
-            maximumTreesPerForest + 1
-        );
+        int treeCount =
+            random.Next(
+                minimumTreesPerForest,
+                maximumTreesPerForest + 1
+            );
 
         float densityStrength =
             Mathf.InverseLerp(
@@ -282,14 +314,15 @@ public class WorldSpawner : MonoBehaviour
                 centerDensity
             );
 
-        treeCount = Mathf.RoundToInt(
-            treeCount
-            * Mathf.Lerp(
-                0.65f,
-                1.35f,
-                densityStrength
-            )
-        );
+        treeCount =
+            Mathf.RoundToInt(
+                treeCount *
+                Mathf.Lerp(
+                    0.65f,
+                    1.35f,
+                    densityStrength
+                )
+            );
 
         SpawnForestTrees(
             center,
@@ -300,21 +333,21 @@ public class WorldSpawner : MonoBehaviour
     }
 
     private void SpawnForestTrees(
-    Vector3 center,
-    float radius,
-    int targetTreeCount,
-    System.Random random)
+        Vector3 center,
+        float radius,
+        int targetTreeCount,
+        System.Random random)
     {
         int spawnedTrees = 0;
         int attempts = 0;
 
         int maximumAttempts =
-            targetTreeCount * attemptsPerTree;
+            targetTreeCount *
+            attemptsPerTree;
 
         while (
             spawnedTrees < targetTreeCount &&
-            attempts < maximumAttempts
-        )
+            attempts < maximumAttempts)
         {
             attempts++;
 
@@ -324,20 +357,26 @@ public class WorldSpawner : MonoBehaviour
                     radius
                 );
 
-            Vector3 position = new Vector3(
-                center.x + offset.x,
-                0f,
-                center.z + offset.y
-            );
+            Vector3 position =
+                new Vector3(
+                    center.x + offset.x,
+                    0f,
+                    center.z + offset.y
+                );
 
             if (!IsInsideTerrainBounds(position))
                 continue;
 
             float forestDensity =
-                vegetationMap.GetForestDensity(position);
+                vegetationMap.GetForestDensity(
+                    position
+                );
 
-            if (forestDensity < minimumTreeDensity)
+            if (forestDensity <
+                minimumTreeDensity)
+            {
                 continue;
+            }
 
             float acceptance =
                 Mathf.InverseLerp(
@@ -346,8 +385,11 @@ public class WorldSpawner : MonoBehaviour
                     forestDensity
                 );
 
-            if (NextFloat(random) > acceptance)
+            if (NextFloat(random) >
+                acceptance)
+            {
                 continue;
+            }
 
             if (!IsFarEnoughFromTrees(position))
                 continue;
@@ -364,24 +406,24 @@ public class WorldSpawner : MonoBehaviour
             );
 
             treePositions.Add(position);
+
             spawnedTrees++;
         }
     }
 
     private Vector2 GetRandomPointInCircle(
-    System.Random random,
-    float radius)
+        System.Random random,
+        float radius)
     {
         float angle =
-            NextFloat(random)
-            * Mathf.PI
-            * 2f;
+            NextFloat(random) *
+            Mathf.PI *
+            2f;
 
-        // Sqrt sorgt für eine gleichmäßige Verteilung
-        // über die gesamte Kreisfläche.
         float distance =
-            Mathf.Sqrt(NextFloat(random))
-            * radius;
+            Mathf.Sqrt(
+                NextFloat(random)
+            ) * radius;
 
         return new Vector2(
             Mathf.Cos(angle) * distance,
@@ -390,7 +432,7 @@ public class WorldSpawner : MonoBehaviour
     }
 
     private bool IsInsideTerrainBounds(
-    Vector3 position)
+        Vector3 position)
     {
         Vector3 terrainPosition =
             terrain.transform.position;
@@ -400,49 +442,61 @@ public class WorldSpawner : MonoBehaviour
 
         return
             position.x >= terrainPosition.x &&
-            position.x <= terrainPosition.x + terrainSize.x &&
+            position.x <=
+                terrainPosition.x +
+                terrainSize.x &&
             position.z >= terrainPosition.z &&
-            position.z <= terrainPosition.z + terrainSize.z;
+            position.z <=
+                terrainPosition.z +
+                terrainSize.z;
     }
 
     private bool IsFarEnoughFromTrees(
-    Vector3 position)
+        Vector3 position)
     {
         if (minimumTreeDistance <= 0f)
             return true;
 
         float minimumDistanceSquared =
-            minimumTreeDistance
-            * minimumTreeDistance;
+            minimumTreeDistance *
+            minimumTreeDistance;
 
-        foreach (Vector3 treePosition in treePositions)
+        foreach (
+            Vector3 treePosition
+            in treePositions)
         {
             float deltaX =
-                position.x - treePosition.x;
+                position.x -
+                treePosition.x;
 
             float deltaZ =
-                position.z - treePosition.z;
+                position.z -
+                treePosition.z;
 
             float distanceSquared =
-                deltaX * deltaX
-                + deltaZ * deltaZ;
+                deltaX * deltaX +
+                deltaZ * deltaZ;
 
-            if (distanceSquared < minimumDistanceSquared)
+            if (distanceSquared <
+                minimumDistanceSquared)
+            {
                 return false;
+            }
         }
 
         return true;
     }
 
     private void SpawnTreeDeterministic(
-    Vector3 position,
-    System.Random random)
+        Vector3 position,
+        System.Random random)
     {
         if (treePrefab == null)
             return;
 
         float randomYaw =
-            NextFloat(random) * 360f;
+            NextFloat(random) *
+            360f;
 
         Quaternion rotation =
             Quaternion.Euler(
@@ -459,22 +513,28 @@ public class WorldSpawner : MonoBehaviour
     }
 
     private static float NextFloat(
-    System.Random random)
+        System.Random random)
     {
-        return (float)random.NextDouble();
+        return
+            (float)random.NextDouble();
     }
 
     private static int CombineSeed(
-    int seed,
-    int cellX,
-    int cellZ)
+        int seed,
+        int cellX,
+        int cellZ)
     {
         unchecked
         {
             int hash = seed;
 
-            hash = hash * 397 ^ cellX;
-            hash = hash * 397 ^ cellZ;
+            hash =
+                hash * 397 ^
+                cellX;
+
+            hash =
+                hash * 397 ^
+                cellZ;
 
             return hash;
         }
@@ -482,12 +542,27 @@ public class WorldSpawner : MonoBehaviour
 
     private void SpawnRocks()
     {
-        int amount = Random.Range(minRocks, maxRocks + 1);
+        rockPositions.Clear();
+
+        if (rockPrefab == null)
+            return;
+
+        int amount =
+            Random.Range(
+                minRocks,
+                maxRocks + 1
+            );
 
         for (int i = 0; i < amount; i++)
         {
-            Vector3 position = GetOpenPositionAwayFromTrees();
-            position = PlaceOnTerrain(position, rockYOffset);
+            Vector3 position =
+                GetOpenPositionAwayFromTrees();
+
+            position =
+                PlaceOnTerrain(
+                    position,
+                    rockYOffset
+                );
 
             Spawn(
                 rockPrefab,
@@ -501,14 +576,24 @@ public class WorldSpawner : MonoBehaviour
 
     private void SpawnMushrooms()
     {
-        int amount = Random.Range(
-            minMushrooms,
-            maxMushrooms + 1
-        );
+        if (mushroomPrefab == null)
+            return;
+
+        int amount =
+            Random.Range(
+                minMushrooms,
+                maxMushrooms + 1
+            );
 
         List<Vector3> anchors = new();
-        anchors.AddRange(treePositions);
-        anchors.AddRange(rockPositions);
+
+        anchors.AddRange(
+            treePositions
+        );
+
+        anchors.AddRange(
+            rockPositions
+        );
 
         SpawnNearAnchors(
             mushroomPrefab,
@@ -533,50 +618,60 @@ public class WorldSpawner : MonoBehaviour
             return;
         }
 
-        int targetClusterCount = Random.Range(
-            minBerryClusters,
-            maxBerryClusters + 1
-        );
+        int targetClusterCount =
+            Random.Range(
+                minBerryClusters,
+                maxBerryClusters + 1
+            );
 
         int spawnedClusters = 0;
         int attempts = 0;
 
         int maximumAttempts =
-            targetClusterCount * berryClusterPlacementAttempts;
+            targetClusterCount *
+            berryClusterPlacementAttempts;
 
-        List<Vector3> berryBushPositions = new();
+        List<Vector3> berryBushPositions =
+            new List<Vector3>();
 
         while (
-            spawnedClusters < targetClusterCount &&
-            attempts < maximumAttempts
-        )
+            spawnedClusters <
+            targetClusterCount &&
+            attempts <
+            maximumAttempts)
         {
             attempts++;
 
             Vector3 clusterCenter =
                 GetRandomPosition();
 
-            // Cluster nur dort zulassen,
-            // wo nicht zu viele Bäume stehen.
-            if (!IsGoodBerryClusterPosition(clusterCenter))
+            if (!IsGoodBerryClusterPosition(
+                clusterCenter))
+            {
                 continue;
+            }
 
-            int bushCount = Random.Range(
-                minBerryBushesPerCluster,
-                maxBerryBushesPerCluster + 1
-            );
+            int bushCount =
+                Random.Range(
+                    minBerryBushesPerCluster,
+                    maxBerryBushesPerCluster + 1
+                );
 
             int spawnedInCluster = 0;
 
-            for (int i = 0; i < bushCount; i++)
+            for (
+                int i = 0;
+                i < bushCount;
+                i++)
             {
-                const int bushPlacementAttempts = 10;
+                const int
+                    bushPlacementAttempts = 10;
 
                 for (
                     int bushAttempt = 0;
-                    bushAttempt < bushPlacementAttempts;
-                    bushAttempt++
-                )
+                    bushAttempt <
+                    bushPlacementAttempts;
+                    bushAttempt++)
                 {
                     Vector2 offset =
                         Random.insideUnitCircle *
@@ -590,8 +685,11 @@ public class WorldSpawner : MonoBehaviour
                             offset.y
                         );
 
-                    if (!IsInsideTerrainBounds(position))
+                    if (!IsInsideTerrainBounds(
+                        position))
+                    {
                         continue;
+                    }
 
                     if (!IsFarEnoughFromBerryBushes(
                         position,
@@ -600,10 +698,11 @@ public class WorldSpawner : MonoBehaviour
                         continue;
                     }
 
-                    position = PlaceOnTerrain(
-                        position,
-                        berryBushYOffset
-                    );
+                    position =
+                        PlaceOnTerrain(
+                            position,
+                            berryBushYOffset
+                        );
 
                     Spawn(
                         berryBushPrefab,
@@ -611,7 +710,9 @@ public class WorldSpawner : MonoBehaviour
                         SurfaceAlignment.Upright
                     );
 
-                    berryBushPositions.Add(position);
+                    berryBushPositions.Add(
+                        position
+                    );
 
                     spawnedInCluster++;
 
@@ -619,21 +720,18 @@ public class WorldSpawner : MonoBehaviour
                 }
             }
 
-            // Nur als erfolgreicher Cluster zählen,
-            // wenn wenigstens ein Busch gespawnt wurde.
             if (spawnedInCluster > 0)
                 spawnedClusters++;
         }
 
         Debug.Log(
-            $"WorldSpawner: {berryBushPositions.Count} Berry Bushes " +
-            $"in {spawnedClusters} Clustern erzeugt.",
+            $"WorldSpawner: {berryBushPositions.Count} Berry Bushes in {spawnedClusters} Clustern erzeugt.",
             this
         );
     }
 
     private bool IsGoodBerryClusterPosition(
-    Vector3 position)
+        Vector3 position)
     {
         int nearbyTrees = 0;
 
@@ -641,19 +739,24 @@ public class WorldSpawner : MonoBehaviour
             berryTreeCheckRadius *
             berryTreeCheckRadius;
 
-        foreach (Vector3 treePosition in treePositions)
+        foreach (
+            Vector3 treePosition
+            in treePositions)
         {
             float deltaX =
-                position.x - treePosition.x;
+                position.x -
+                treePosition.x;
 
             float deltaZ =
-                position.z - treePosition.z;
+                position.z -
+                treePosition.z;
 
             float distanceSquared =
                 deltaX * deltaX +
                 deltaZ * deltaZ;
 
-            if (distanceSquared <= checkRadiusSquared)
+            if (distanceSquared <=
+                checkRadiusSquared)
             {
                 nearbyTrees++;
 
@@ -669,20 +772,24 @@ public class WorldSpawner : MonoBehaviour
     }
 
     private bool IsFarEnoughFromBerryBushes(
-    Vector3 position,
-    List<Vector3> existingBushes)
+        Vector3 position,
+        List<Vector3> existingBushes)
     {
         float minimumDistanceSquared =
             minimumBerryBushDistance *
             minimumBerryBushDistance;
 
-        foreach (Vector3 bushPosition in existingBushes)
+        foreach (
+            Vector3 bushPosition
+            in existingBushes)
         {
             float deltaX =
-                position.x - bushPosition.x;
+                position.x -
+                bushPosition.x;
 
             float deltaZ =
-                position.z - bushPosition.z;
+                position.z -
+                bushPosition.z;
 
             float distanceSquared =
                 deltaX * deltaX +
@@ -698,6 +805,217 @@ public class WorldSpawner : MonoBehaviour
         return true;
     }
 
+    private void GenerateTerrainGrass()
+    {
+        if (terrain == null)
+            return;
+
+        TerrainData terrainData =
+            terrain.terrainData;
+
+        int prototypeCount =
+            terrainData.detailPrototypes.Length;
+
+        if (grassDetailLayer1 < 0 ||
+            grassDetailLayer1 >= prototypeCount)
+        {
+            Debug.LogError(
+                $"WorldSpawner: Grass Detail Layer 1 ({grassDetailLayer1}) existiert nicht.",
+                this
+            );
+
+            return;
+        }
+
+        int detailWidth =
+            terrainData.detailWidth;
+
+        int detailHeight =
+            terrainData.detailHeight;
+
+        if (detailWidth <= 0 ||
+            detailHeight <= 0)
+        {
+            Debug.LogError(
+                "WorldSpawner: Terrain besitzt keine gültige Detail-Auflösung.",
+                this
+            );
+
+            return;
+        }
+
+        int[,] grassLayer1 =
+            new int[
+                detailHeight,
+                detailWidth
+            ];
+
+        Vector3 terrainPosition =
+            terrain.transform.position;
+
+        Vector3 terrainSize =
+            terrainData.size;
+
+        float seedOffsetX =
+            (worldSeed & 1023) *
+            0.0173f;
+
+        float seedOffsetZ =
+            ((worldSeed >> 10) & 1023) *
+            0.0191f;
+
+        for (int z = 0; z < detailHeight; z++)
+        {
+            float normalizedZ =
+                detailHeight > 1
+                    ? (float)z /
+                      (detailHeight - 1)
+                    : 0f;
+
+            for (int x = 0; x < detailWidth; x++)
+            {
+                float normalizedX =
+                    detailWidth > 1
+                        ? (float)x /
+                          (detailWidth - 1)
+                        : 0f;
+
+                Vector3 worldPosition =
+                    new Vector3(
+                        terrainPosition.x +
+                        normalizedX *
+                        terrainSize.x,
+
+                        terrainPosition.y,
+
+                        terrainPosition.z +
+                        normalizedZ *
+                        terrainSize.z
+                    );
+
+                Vector3 terrainNormal =
+                    terrainData.GetInterpolatedNormal(
+                        normalizedX,
+                        normalizedZ
+                    );
+
+                float slope =
+                    Vector3.Angle(
+                        Vector3.up,
+                        terrainNormal
+                    );
+
+                if (slope > maxGrassSlope)
+                    continue;
+
+                int nearbyTrees =
+                    CountTreesNearPosition(
+                        worldPosition,
+                        grassTreeCheckRadius,
+                        grassFullSuppressionTreeCount
+                    );
+
+                float treeSuppression = 0f;
+
+                if (nearbyTrees >
+                    grassSuppressionStartTreeCount)
+                {
+                    treeSuppression =
+                        Mathf.InverseLerp(
+                            grassSuppressionStartTreeCount,
+                            grassFullSuppressionTreeCount,
+                            nearbyTrees
+                        );
+                }
+
+                float grassFactor =
+                    Mathf.Lerp(
+                        1f,
+                        denseForestGrassMultiplier,
+                        treeSuppression
+                    );
+
+                float noise =
+                    Mathf.PerlinNoise(
+                        normalizedX * 23f +
+                        seedOffsetX,
+
+                        normalizedZ * 23f +
+                        seedOffsetZ
+                    );
+
+                float variation =
+                    Mathf.Lerp(
+                        1f -
+                        grassDensityVariation,
+                        1f,
+                        noise
+                    );
+
+                int totalDensity =
+                    Mathf.RoundToInt(
+                        maxGrassDensityPerCell *
+                        grassFactor *
+                        variation
+                    );
+
+                if (totalDensity <= 0)
+                    continue;
+
+                grassLayer1[z, x] =
+                    totalDensity;
+            }
+        }
+
+        terrainData.SetDetailLayer(
+            0,
+            0,
+            grassDetailLayer1,
+            grassLayer1
+        );
+
+        Debug.Log(
+            "WorldSpawner: Terrain-Gras generiert.",
+            this
+        );
+    }
+
+    private int CountTreesNearPosition(
+    Vector3 position,
+    float radius,
+    int stopAtCount)
+    {
+        int nearbyTrees = 0;
+
+        float radiusSquared =
+            radius * radius;
+
+        foreach (Vector3 treePosition in treePositions)
+        {
+            float deltaX =
+                position.x -
+                treePosition.x;
+
+            float deltaZ =
+                position.z -
+                treePosition.z;
+
+            float distanceSquared =
+                deltaX * deltaX +
+                deltaZ * deltaZ;
+
+            if (distanceSquared <= radiusSquared)
+            {
+                nearbyTrees++;
+
+                if (nearbyTrees >= stopAtCount)
+                    break;
+            }
+        }
+
+        return nearbyTrees;
+    }
+
     private void SpawnNearAnchors(
         GameObject prefab,
         int amount,
@@ -705,14 +1023,11 @@ public class WorldSpawner : MonoBehaviour
         float yOffset,
         float minDistance,
         float maxDistance,
-        SurfaceAlignment alignment
-    )
+        SurfaceAlignment alignment)
     {
-        if (
-            prefab == null ||
+        if (prefab == null ||
             anchors == null ||
-            anchors.Count == 0
-        )
+            anchors.Count == 0)
         {
             return;
         }
@@ -720,17 +1035,31 @@ public class WorldSpawner : MonoBehaviour
         for (int i = 0; i < amount; i++)
         {
             Vector3 anchor =
-                anchors[Random.Range(0, anchors.Count)];
+                anchors[
+                    Random.Range(
+                        0,
+                        anchors.Count
+                    )
+                ];
 
-            Vector3 position = GetRandomPositionNear(
-                anchor,
-                minDistance,
-                maxDistance
+            Vector3 position =
+                GetRandomPositionNear(
+                    anchor,
+                    minDistance,
+                    maxDistance
+                );
+
+            position =
+                PlaceOnTerrain(
+                    position,
+                    yOffset
+                );
+
+            Spawn(
+                prefab,
+                position,
+                alignment
             );
-
-            position = PlaceOnTerrain(position, yOffset);
-
-            Spawn(prefab, position, alignment);
         }
     }
 
@@ -738,19 +1067,29 @@ public class WorldSpawner : MonoBehaviour
     {
         const int maximumAttempts = 30;
 
-        for (int attempt = 0; attempt < maximumAttempts; attempt++)
+        for (
+            int attempt = 0;
+            attempt < maximumAttempts;
+            attempt++)
         {
-            Vector3 position = GetRandomPosition();
-            bool tooCloseToTree = false;
+            Vector3 position =
+                GetRandomPosition();
 
-            foreach (Vector3 treePosition in treePositions)
+            bool tooCloseToTree =
+                false;
+
+            foreach (
+                Vector3 treePosition
+                in treePositions)
             {
-                if (
-                    GetHorizontalDistance(position, treePosition) <
-                    rockMinDistanceFromTrees
-                )
+                if (GetHorizontalDistance(
+                    position,
+                    treePosition) <
+                    rockMinDistanceFromTrees)
                 {
-                    tooCloseToTree = true;
+                    tooCloseToTree =
+                        true;
+
                     break;
                 }
             }
@@ -765,44 +1104,74 @@ public class WorldSpawner : MonoBehaviour
     private Vector3 GetRandomPositionNear(
         Vector3 center,
         float minDistance,
-        float maxDistance
-    )
+        float maxDistance)
     {
-        float angle = Random.Range(0f, Mathf.PI * 2f);
-        float distance = Random.Range(minDistance, maxDistance);
+        float angle =
+            Random.Range(
+                0f,
+                Mathf.PI * 2f
+            );
 
-        Vector3 position = center + new Vector3(
-            Mathf.Cos(angle) * distance,
-            0f,
-            Mathf.Sin(angle) * distance
+        float distance =
+            Random.Range(
+                minDistance,
+                maxDistance
+            );
+
+        Vector3 position =
+            center +
+            new Vector3(
+                Mathf.Cos(angle) *
+                distance,
+                0f,
+                Mathf.Sin(angle) *
+                distance
+            );
+
+        ClampToTerrainBounds(
+            ref position
         );
-
-        ClampToTerrainBounds(ref position);
 
         return position;
     }
 
     private Vector3 GetRandomPosition()
     {
-        Vector3 terrainPosition = terrain.transform.position;
-        Vector3 terrainSize = terrain.terrainData.size;
+        Vector3 terrainPosition =
+            terrain.transform.position;
 
-        float x = Random.Range(
-            terrainPosition.x,
-            terrainPosition.x + terrainSize.x
+        Vector3 terrainSize =
+            terrain.terrainData.size;
+
+        float x =
+            Random.Range(
+                terrainPosition.x,
+                terrainPosition.x +
+                terrainSize.x
+            );
+
+        float z =
+            Random.Range(
+                terrainPosition.z,
+                terrainPosition.z +
+                terrainSize.z
+            );
+
+        return new Vector3(
+            x,
+            0f,
+            z
         );
-
-        float z = Random.Range(
-            terrainPosition.z,
-            terrainPosition.z + terrainSize.z
-        );
-
-        return new Vector3(x, 0f, z);
     }
 
-    private Vector3 PlaceOnTerrain(Vector3 position, float yOffset)
+    private Vector3 PlaceOnTerrain(
+        Vector3 position,
+        float yOffset)
     {
-        float sampledHeight = terrain.SampleHeight(position);
+        float sampledHeight =
+            terrain.SampleHeight(
+                position
+            );
 
         position.y =
             sampledHeight +
@@ -812,131 +1181,143 @@ public class WorldSpawner : MonoBehaviour
         return position;
     }
 
-    private Vector3 GetTerrainNormal(Vector3 worldPosition)
+    private Vector3 GetTerrainNormal(
+        Vector3 worldPosition)
     {
-        Vector3 terrainPosition = terrain.transform.position;
-        Vector3 terrainSize = terrain.terrainData.size;
+        Vector3 terrainPosition =
+            terrain.transform.position;
+
+        Vector3 terrainSize =
+            terrain.terrainData.size;
 
         float normalizedX =
-            (worldPosition.x - terrainPosition.x) /
+            (worldPosition.x -
+             terrainPosition.x) /
             terrainSize.x;
 
         float normalizedZ =
-            (worldPosition.z - terrainPosition.z) /
+            (worldPosition.z -
+             terrainPosition.z) /
             terrainSize.z;
 
-        normalizedX = Mathf.Clamp01(normalizedX);
-        normalizedZ = Mathf.Clamp01(normalizedZ);
+        normalizedX =
+            Mathf.Clamp01(
+                normalizedX
+            );
 
-        return terrain.terrainData.GetInterpolatedNormal(
-            normalizedX,
-            normalizedZ
-        );
+        normalizedZ =
+            Mathf.Clamp01(
+                normalizedZ
+            );
+
+        return
+            terrain.terrainData
+                .GetInterpolatedNormal(
+                    normalizedX,
+                    normalizedZ
+                );
     }
 
-    private Quaternion GetSpawnRotation(
+    private void Spawn(
+        GameObject prefab,
         Vector3 position,
-        SurfaceAlignment alignment
-    )
+        SurfaceAlignment alignment)
     {
-        float randomYaw = Random.Range(0f, 360f);
+        if (prefab == null)
+            return;
 
-        if (alignment == SurfaceAlignment.Upright)
-        {
-            return Quaternion.Euler(
+        GameObject instance =
+            Instantiate(
+                prefab,
+                position,
+                Quaternion.identity
+            );
+
+        float randomYaw =
+            Random.Range(
+                0f,
+                360f
+            );
+
+        instance.transform.rotation =
+            Quaternion.Euler(
                 0f,
                 randomYaw,
                 0f
             );
+
+        if (alignment !=
+            SurfaceAlignment.FollowTerrain)
+        {
+            return;
         }
 
-        Vector3 terrainNormal = GetTerrainNormal(position);
+        Transform visual =
+            instance.transform.Find(
+                "Visual"
+            );
 
-        Quaternion surfaceRotation =
+        if (visual == null)
+            return;
+
+        Vector3 terrainNormal =
+            GetTerrainNormal(
+                position
+            );
+
+        Quaternion slopeRotation =
             Quaternion.FromToRotation(
                 Vector3.up,
                 terrainNormal
             );
 
-        Quaternion yawRotation =
-            Quaternion.AngleAxis(
-                randomYaw,
-                terrainNormal
+        visual.rotation =
+            slopeRotation *
+            visual.rotation;
+    }
+
+    private void ClampToTerrainBounds(
+        ref Vector3 position)
+    {
+        Vector3 terrainPosition =
+            terrain.transform.position;
+
+        Vector3 terrainSize =
+            terrain.terrainData.size;
+
+        position.x =
+            Mathf.Clamp(
+                position.x,
+                terrainPosition.x,
+                terrainPosition.x +
+                terrainSize.x
             );
 
-        return yawRotation * surfaceRotation;
-    }
-
-    private void Spawn(
-     GameObject prefab,
-     Vector3 position,
-     SurfaceAlignment alignment)
-    {
-        if (prefab == null)
-            return;
-
-        GameObject instance = Instantiate(
-            prefab,
-            position,
-            Quaternion.identity
-        );
-
-        float randomYaw = Random.Range(0f, 360f);
-
-        instance.transform.rotation =
-            Quaternion.Euler(0f, randomYaw, 0f);
-
-        if (alignment == SurfaceAlignment.FollowTerrain)
-        {
-            Transform visual =
-                instance.transform.Find("Visual");
-
-            if (visual != null)
-            {
-                Vector3 terrainNormal =
-                    GetTerrainNormal(position);
-
-                Quaternion slopeRotation =
-                    Quaternion.FromToRotation(
-                        Vector3.up,
-                        terrainNormal
-                    );
-
-                visual.rotation =
-                    slopeRotation * visual.rotation;
-            }
-        }
-    }
-
-    private void ClampToTerrainBounds(ref Vector3 position)
-    {
-        Vector3 terrainPosition = terrain.transform.position;
-        Vector3 terrainSize = terrain.terrainData.size;
-
-        position.x = Mathf.Clamp(
-            position.x,
-            terrainPosition.x,
-            terrainPosition.x + terrainSize.x
-        );
-
-        position.z = Mathf.Clamp(
-            position.z,
-            terrainPosition.z,
-            terrainPosition.z + terrainSize.z
-        );
+        position.z =
+            Mathf.Clamp(
+                position.z,
+                terrainPosition.z,
+                terrainPosition.z +
+                terrainSize.z
+            );
     }
 
     private static float GetHorizontalDistance(
         Vector3 first,
-        Vector3 second
-    )
+        Vector3 second)
     {
-        float deltaX = first.x - second.x;
-        float deltaZ = first.z - second.z;
+        float deltaX =
+            first.x -
+            second.x;
 
-        return Mathf.Sqrt(
-            deltaX * deltaX +
-            deltaZ * deltaZ
-        );
+        float deltaZ =
+            first.z -
+            second.z;
+
+        return
+            Mathf.Sqrt(
+                deltaX * deltaX +
+                deltaZ * deltaZ
+            );
     }
 }
