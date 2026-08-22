@@ -25,6 +25,8 @@ public class BuildManager : MonoBehaviour
     public float rotationStep = 45f;
     public LayerMask deleteMask;
 
+    public float cameraBuildSearchDistance = 20f;
+
     public InventoryGridUI inventoryGridUI;
     public ItemData woodItem;
 
@@ -243,14 +245,41 @@ public class BuildManager : MonoBehaviour
 
     void UpdateFreePlacement()
     {
-        Ray ray = new Ray(playerCamera.transform.position, playerCamera.transform.forward);
+        Ray ray = new Ray(
+            buildOrigin.position,
+            playerCamera.transform.forward
+        );
 
-        if (Physics.Raycast(ray, out RaycastHit hit, maxBuildDistance, groundMask | buildableMask))
+        if (Physics.Raycast(
+            ray,
+            out RaycastHit hit,
+            cameraBuildSearchDistance,
+            groundMask | buildableMask))
         {
+            Vector3 playerToHit =
+                hit.point - buildOrigin.position;
+
+            playerToHit.y = 0f;
+
+            float distanceFromPlayer =
+                playerToHit.magnitude;
+
+            if (distanceFromPlayer > maxBuildDistance)
+            {
+                previewObject.SetActive(false);
+                return;
+            }
+
             previewObject.SetActive(true);
 
             previewObject.transform.rotation =
-                Quaternion.Euler(0, currentRotation, 0) * CurrentPrefab.transform.rotation;
+                Quaternion.Euler(
+                    0,
+                    currentRotation,
+                    0
+                ) *
+                CurrentPrefab.transform.rotation;
+
 
             Vector3 freePosition = GetPositionWithBottomSnap(hit.point);
 
@@ -385,6 +414,10 @@ public class BuildManager : MonoBehaviour
             previewObject.transform.position,
             previewObject.transform.rotation
         );
+        
+        ClearTerrainGrassUnderObject(
+            placedObject
+        );
 
         if (cost != null)
         {
@@ -464,6 +497,159 @@ public class BuildManager : MonoBehaviour
         }
 
         currentTargetSnap = null;
+    }
+
+    private void ClearTerrainGrassUnderObject(
+    GameObject placedObject)
+    {
+        if (placedObject == null)
+            return;
+
+        Terrain terrain =
+            Terrain.activeTerrain;
+
+        if (terrain == null)
+            return;
+
+        Renderer[] renderers =
+    placedObject.GetComponentsInChildren<Renderer>();
+
+        if (renderers == null ||
+            renderers.Length == 0)
+        {
+            return;
+        }
+
+        Bounds bounds =
+            renderers[0].bounds;
+
+        for (int i = 1; i < renderers.Length; i++)
+        {
+            bounds.Encapsulate(
+                renderers[i].bounds
+            );
+        }
+
+        TerrainData terrainData =
+            terrain.terrainData;
+
+        Vector3 terrainPosition =
+            terrain.transform.position;
+
+        Vector3 terrainSize =
+            terrainData.size;
+
+        float minNormalizedX =
+            Mathf.Clamp01(
+                (bounds.min.x - terrainPosition.x) /
+                terrainSize.x
+            );
+
+        float maxNormalizedX =
+            Mathf.Clamp01(
+                (bounds.max.x - terrainPosition.x) /
+                terrainSize.x
+            );
+
+        float minNormalizedZ =
+            Mathf.Clamp01(
+                (bounds.min.z - terrainPosition.z) /
+                terrainSize.z
+            );
+
+        float maxNormalizedZ =
+            Mathf.Clamp01(
+                (bounds.max.z - terrainPosition.z) /
+                terrainSize.z
+            );
+
+        int startX =
+            Mathf.FloorToInt(
+                minNormalizedX *
+                terrainData.detailWidth
+            );
+
+        int endX =
+            Mathf.CeilToInt(
+                maxNormalizedX *
+                terrainData.detailWidth
+            );
+
+        int startZ =
+            Mathf.FloorToInt(
+                minNormalizedZ *
+                terrainData.detailHeight
+            );
+
+        int endZ =
+            Mathf.CeilToInt(
+                maxNormalizedZ *
+                terrainData.detailHeight
+            );
+
+        startX =
+            Mathf.Clamp(
+                startX,
+                0,
+                terrainData.detailWidth - 1
+            );
+
+        endX =
+            Mathf.Clamp(
+                endX,
+                startX + 1,
+                terrainData.detailWidth
+            );
+
+        startZ =
+            Mathf.Clamp(
+                startZ,
+                0,
+                terrainData.detailHeight - 1
+            );
+
+        endZ =
+            Mathf.Clamp(
+                endZ,
+                startZ + 1,
+                terrainData.detailHeight
+            );
+
+        int width =
+            endX - startX;
+
+        int height =
+            endZ - startZ;
+
+        for (
+            int layer = 0;
+            layer < terrainData.detailPrototypes.Length;
+            layer++)
+        {
+            int[,] details =
+                terrainData.GetDetailLayer(
+                    startX,
+                    startZ,
+                    width,
+                    height,
+                    layer
+                );
+
+            for (int z = 0; z < height; z++)
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    details[z, x] = 0;
+                }
+            }
+
+            terrainData.SetDetailLayer(
+                startX,
+                startZ,
+                layer,
+                details
+            );
+        }
     }
 
 }

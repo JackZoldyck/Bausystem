@@ -138,45 +138,57 @@ public class PlayerStats : MonoBehaviour
 
     public bool EatFood(ItemData foodItem)
     {
-        Debug.Log(
-        $"FOOD | Active: {activeFoods.Count} | Max: {GetMaxFoodSlots()} | Item: {foodItem?.name}"
-        );
-
-        if (foodItem == null || foodItem.itemType != ItemType.Food)
+        if (foodItem == null ||
+            foodItem.itemType != ItemType.Food)
+        {
             return false;
+        }
+
+        foreach (ActiveFood activeFood in activeFoods)
+        {
+            if (activeFood.item == foodItem)
+            {
+                activeFood.remainingTime =
+                    foodItem.foodDuration;
+
+                return true;
+            }
+        }
 
         if (activeFoods.Count >= GetMaxFoodSlots())
         {
             return false;
         }
 
-        ActiveFood activeFood = new ActiveFood();
-        activeFood.item = foodItem;
-        activeFood.remainingTime = foodItem.foodDuration;
+        ActiveFood newActiveFood =
+            new ActiveFood();
 
-        activeFoods.Add(activeFood);
+        newActiveFood.item =
+            foodItem;
 
-        Debug.Log($"=== ACTIVE FOODS: {activeFoods.Count} ===");
+        newActiveFood.remainingTime =
+            foodItem.foodDuration;
 
-        for (int i = 0; i < activeFoods.Count; i++)
-        {
-            Debug.Log(
-                $"Slot {i}: {activeFoods[i].item.itemName} | " +
-                $"Zeit: {activeFoods[i].remainingTime}"
+        activeFoods.Add(
+            newActiveFood
+        );
+
+        currentHealth =
+            Mathf.Clamp(
+                currentHealth +
+                foodItem.healthBonus,
+                0f,
+                GetMaxHealth()
             );
-        }
 
-        currentHealth = Mathf.Clamp(
-            currentHealth + foodItem.healthBonus,
-            0f,
-            GetMaxHealth()
-        );
+        currentStamina =
+            Mathf.Clamp(
+                currentStamina +
+                foodItem.staminaBonus,
+                0f,
+                GetMaxStamina()
+            );
 
-        currentStamina = Mathf.Clamp(
-            currentStamina + foodItem.staminaBonus,
-            0f,
-            GetMaxStamina()
-        );
         return true;
     }
 

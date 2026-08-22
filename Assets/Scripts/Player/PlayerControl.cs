@@ -116,7 +116,7 @@ public class PlayerController : MonoBehaviour
         {
             bool wantsToSprint =
                 shiftPressed &&
-                moveInput.y > 0f;
+                moveInput.sqrMagnitude > 0.01f;
 
             if (wantsToSprint)
             {

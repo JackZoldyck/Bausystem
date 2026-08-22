@@ -28,7 +28,12 @@ public class SkeletonAI : MonoBehaviour
 
     [Header("Wander")]
     public float wanderRadius = 8f;
-    public float wanderInterval = 3f;
+
+    public float minIdleTimeBetweenWanders = 5f;
+    public float maxIdleTimeBetweenWanders = 10f;
+
+    private bool isWaitingAtWanderPoint;
+    private float wanderWaitUntil;
 
     private State currentState = State.Wander;
 
@@ -36,6 +41,8 @@ public class SkeletonAI : MonoBehaviour
 
     private float nextWanderTime;
     private float nextAttackTime;
+
+    private bool attackLocked;
 
     private void Start()
     {
@@ -125,24 +132,49 @@ public class SkeletonAI : MonoBehaviour
     {
         if (distanceToPlayer <= detectionRange)
         {
-            currentState = State.Chase;
+            isWaitingAtWanderPoint = false;
+
+            currentState =
+                State.Chase;
+
             return;
         }
 
         if (!agent.isOnNavMesh)
             return;
 
-        if (Time.time >= nextWanderTime)
+        if (isWaitingAtWanderPoint)
         {
-            SetNewWanderDestination();
+            agent.isStopped = true;
+            agent.velocity = Vector3.zero;
+
+            if (Time.time >= wanderWaitUntil)
+            {
+                isWaitingAtWanderPoint = false;
+
+                SetNewWanderDestination();
+            }
+
             return;
         }
 
         if (!agent.pathPending &&
             agent.hasPath &&
-            agent.remainingDistance <= agent.stoppingDistance)
+            agent.remainingDistance <=
+            agent.stoppingDistance + 0.1f)
         {
-            SetNewWanderDestination();
+            agent.ResetPath();
+
+            agent.isStopped = true;
+
+            isWaitingAtWanderPoint = true;
+
+            wanderWaitUntil =
+                Time.time +
+                Random.Range(
+                    minIdleTimeBetweenWanders,
+                    maxIdleTimeBetweenWanders
+                );
         }
     }
 
@@ -150,6 +182,8 @@ public class SkeletonAI : MonoBehaviour
     {
         if (!agent.isOnNavMesh)
             return;
+
+        agent.isStopped = false;
 
         if (distanceToPlayer > loseAggroRange)
         {
@@ -163,6 +197,7 @@ public class SkeletonAI : MonoBehaviour
             currentState = State.Attack;
 
             agent.ResetPath();
+            agent.isStopped = true;
 
             return;
         }
@@ -177,23 +212,45 @@ public class SkeletonAI : MonoBehaviour
 
     private void UpdateAttack(float distanceToPlayer)
     {
+        if (!agent.isOnNavMesh)
+            return;
+
+        agent.isStopped = true;
+        agent.velocity = Vector3.zero;
+
+        FacePlayer();
+
+        if (attackLocked)
+            return;
+
         if (distanceToPlayer > attackRange)
         {
+            agent.isStopped = false;
             currentState = State.Chase;
             return;
         }
 
-        agent.ResetPath();
-
-        FacePlayer();
-
         if (Time.time >= nextAttackTime)
         {
+            attackLocked = true;
+
             animator.SetTrigger("Attack");
 
             nextAttackTime =
-                Time.time +
-                attackCooldown;
+                Time.time + attackCooldown;
+        }
+    }
+
+    public void FinishAttack()
+    {
+        Debug.Log("UDO: FinishAttack Event wurde ausgelöst!");
+
+        attackLocked = false;
+
+        if (agent != null &&
+            agent.isOnNavMesh)
+        {
+            agent.isStopped = false;
         }
     }
 
@@ -229,9 +286,7 @@ public class SkeletonAI : MonoBehaviour
             return;
         }
 
-        nextWanderTime =
-            Time.time +
-            wanderInterval;
+        agent.isStopped = false;
 
         Vector3 randomDirection =
             Random.insideUnitSphere *
