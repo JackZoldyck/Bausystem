@@ -12,7 +12,8 @@ public enum ToolType
     None,
     Axe,
     Pickaxe,
-    Hammer
+    Hammer,
+    Sword
 }
 
 [CreateAssetMenu(fileName = "NewItem", menuName = "Inventory/Item")]

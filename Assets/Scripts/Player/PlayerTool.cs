@@ -5,10 +5,13 @@ public class PlayerTool : MonoBehaviour
     public GameObject axeObjectFP;
     public GameObject pickaxeObjectFP;
     public GameObject hammerObjectFP;
+    public GameObject swordObjectFP;
 
     public GameObject axeObjectTP;
     public GameObject pickaxeObjectTP;
     public GameObject hammerObjectTP;
+    public GameObject swordObjectTP;
+
     public HotbarUI hotbarUI;
     public AxeAnimation axeAnimation;
     public PickaxeAnimation pickaxeAnimation;
@@ -17,13 +20,16 @@ public class PlayerTool : MonoBehaviour
     public bool hasAxe = false;
     public bool hasPickaxe = false;
     public bool hasHammer = false;
+    public bool hasSword = false;
 
     public bool unlockedAxe = false;
     public bool unlockedPickaxe = false;
     public bool unlockedHammer = false;
+    public bool unlockedSword = false;
 
     public int axeDamage = 1;
     public int pickaxeDamage = 1;
+    public int swordDamage = 10;
 
     private int selectedHotbarIndex = -1;
 
@@ -54,22 +60,32 @@ public class PlayerTool : MonoBehaviour
         if (selectedHotbarIndex == index)
         {
             selectedHotbarIndex = -1;
+
             UnequipAllTools();
+
             hotbarUI.DeselectAll();
+
             return;
         }
 
-        HotbarSlotData slot = hotbarUI.hotbarData.GetSlot(index);
+        HotbarSlotData slot =
+            hotbarUI.hotbarData.GetSlot(index);
 
-        if (slot == null || slot.IsEmpty() || slot.item == null)
+        if (slot == null ||
+            slot.IsEmpty() ||
+            slot.item == null)
         {
             selectedHotbarIndex = -1;
+
             UnequipAllTools();
+
             hotbarUI.DeselectAll();
+
             return;
         }
 
         selectedHotbarIndex = index;
+
         hotbarUI.SetSelectedIndex(index);
 
         EquipTool(slot.item);
@@ -95,6 +111,10 @@ public class PlayerTool : MonoBehaviour
             case ToolType.Hammer:
                 hasHammer = true;
                 break;
+
+            case ToolType.Sword:
+                hasSword = true;
+                break;
         }
 
         UpdateToolState();
@@ -105,9 +125,12 @@ public class PlayerTool : MonoBehaviour
         hasAxe = false;
         hasPickaxe = false;
         hasHammer = false;
+        hasSword = false;
 
         if (buildManager != null)
+        {
             buildManager.CancelBuildMode();
+        }
 
         UpdateToolState();
     }
@@ -117,7 +140,10 @@ public class PlayerTool : MonoBehaviour
         bool firstPerson = true;
 
         if (playerZoomCamera != null)
-            firstPerson = playerZoomCamera.IsFirstPerson;
+        {
+            firstPerson =
+                playerZoomCamera.IsFirstPerson;
+        }
 
         SetFirstPerson(firstPerson);
     }
@@ -125,22 +151,60 @@ public class PlayerTool : MonoBehaviour
     public void SetFirstPerson(bool firstPerson)
     {
         if (axeObjectFP != null)
-            axeObjectFP.SetActive(firstPerson && hasAxe);
+        {
+            axeObjectFP.SetActive(
+                firstPerson && hasAxe
+            );
+        }
 
         if (pickaxeObjectFP != null)
-            pickaxeObjectFP.SetActive(firstPerson && hasPickaxe);
+        {
+            pickaxeObjectFP.SetActive(
+                firstPerson && hasPickaxe
+            );
+        }
 
         if (hammerObjectFP != null)
-            hammerObjectFP.SetActive(firstPerson && hasHammer);
+        {
+            hammerObjectFP.SetActive(
+                firstPerson && hasHammer
+            );
+        }
+
+        if (swordObjectFP != null)
+        {
+            swordObjectFP.SetActive(
+                firstPerson && hasSword
+            );
+        }
 
         if (axeObjectTP != null)
-            axeObjectTP.SetActive(!firstPerson && hasAxe);
+        {
+            axeObjectTP.SetActive(
+                !firstPerson && hasAxe
+            );
+        }
 
         if (pickaxeObjectTP != null)
-            pickaxeObjectTP.SetActive(!firstPerson && hasPickaxe);
+        {
+            pickaxeObjectTP.SetActive(
+                !firstPerson && hasPickaxe
+            );
+        }
 
         if (hammerObjectTP != null)
-            hammerObjectTP.SetActive(!firstPerson && hasHammer);
+        {
+            hammerObjectTP.SetActive(
+                !firstPerson && hasHammer
+            );
+        }
+
+        if (swordObjectTP != null)
+        {
+            swordObjectTP.SetActive(
+                !firstPerson && hasSword
+            );
+        }
     }
 
     public void GiveAxe()
@@ -164,6 +228,13 @@ public class PlayerTool : MonoBehaviour
         UpdateToolState();
     }
 
+    public void GiveSword()
+    {
+        unlockedSword = true;
+
+        UpdateToolState();
+    }
+
     public void PlayAxeSwing()
     {
         if (!hasAxe)
@@ -172,7 +243,10 @@ public class PlayerTool : MonoBehaviour
         bool firstPerson = true;
 
         if (playerZoomCamera != null)
-            firstPerson = playerZoomCamera.IsFirstPerson;
+        {
+            firstPerson =
+                playerZoomCamera.IsFirstPerson;
+        }
 
         if (firstPerson)
         {
@@ -181,7 +255,11 @@ public class PlayerTool : MonoBehaviour
         else
         {
             if (thirdPersonAnimator != null)
-                thirdPersonAnimator.SetTrigger("AxeSwing");
+            {
+                thirdPersonAnimator.SetTrigger(
+                    "AxeSwing"
+                );
+            }
         }
     }
 
@@ -193,7 +271,10 @@ public class PlayerTool : MonoBehaviour
         bool firstPerson = true;
 
         if (playerZoomCamera != null)
-            firstPerson = playerZoomCamera.IsFirstPerson;
+        {
+            firstPerson =
+                playerZoomCamera.IsFirstPerson;
+        }
 
         if (firstPerson)
         {
@@ -202,7 +283,11 @@ public class PlayerTool : MonoBehaviour
         else
         {
             if (thirdPersonAnimator != null)
-                thirdPersonAnimator.SetTrigger("PickaxeSwing");
+            {
+                thirdPersonAnimator.SetTrigger(
+                    "PickaxeSwing"
+                );
+            }
         }
     }
 }
