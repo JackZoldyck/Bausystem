@@ -1,9 +1,6 @@
 using UnityEngine;
 using UnityEngine.AI;
 
-using UnityEngine;
-using UnityEngine.AI;
-
 public class SkeletonAI : MonoBehaviour
 {
     private enum State
@@ -28,7 +25,6 @@ public class SkeletonAI : MonoBehaviour
 
     [Header("Wander")]
     public float wanderRadius = 8f;
-
     public float minIdleTimeBetweenWanders = 5f;
     public float maxIdleTimeBetweenWanders = 10f;
 
@@ -39,10 +35,12 @@ public class SkeletonAI : MonoBehaviour
 
     private Vector3 homePosition;
 
-    private float nextWanderTime;
     private float nextAttackTime;
 
     private bool attackLocked;
+    private bool playerDeathHandled;
+
+    private PlayerHealth playerHealth;
 
     private void Start()
     {
@@ -61,9 +59,27 @@ public class SkeletonAI : MonoBehaviour
                 player = playerObject.transform;
         }
 
+        if (player != null)
+        {
+            playerHealth =
+                player.GetComponentInParent<PlayerHealth>();
+
+            if (playerHealth == null)
+                playerHealth =
+                    player.GetComponentInChildren<PlayerHealth>();
+        }
+
         homePosition = transform.position;
 
-        SetNewWanderDestination();
+        if (agent == null)
+        {
+            Debug.LogError(
+                "SkeletonAI: Kein NavMeshAgent gefunden.",
+                this
+            );
+
+            return;
+        }
 
         if (NavMesh.SamplePosition(
             transform.position,
@@ -77,12 +93,14 @@ public class SkeletonAI : MonoBehaviour
         else
         {
             Debug.LogError(
-                "EnemyAI: Kein NavMesh innerhalb von 3 Metern gefunden.",
+                "SkeletonAI: Kein NavMesh innerhalb von 3 Metern gefunden.",
                 this
             );
 
             return;
         }
+
+        SetNewWanderDestination();
     }
 
     private void Update()
@@ -92,6 +110,19 @@ public class SkeletonAI : MonoBehaviour
         {
             return;
         }
+
+        if (playerHealth != null &&
+            playerHealth.IsDead)
+        {
+            HandlePlayerDeath();
+
+            UpdateWanderWithoutPlayer();
+            UpdateAnimator();
+
+            return;
+        }
+
+        playerDeathHandled = false;
 
         float distanceToPlayer =
             Vector3.Distance(
@@ -126,6 +157,87 @@ public class SkeletonAI : MonoBehaviour
         }
 
         UpdateAnimator();
+    }
+
+    private void HandlePlayerDeath()
+    {
+        if (playerDeathHandled)
+            return;
+
+        playerDeathHandled = true;
+
+        attackLocked = false;
+
+        if (animator != null)
+        {
+            animator.ResetTrigger("Attack");
+        }
+
+        if (agent != null &&
+            agent.isOnNavMesh)
+        {
+            agent.isStopped = true;
+            agent.velocity = Vector3.zero;
+            agent.ResetPath();
+        }
+
+        currentState = State.Wander;
+
+        isWaitingAtWanderPoint = true;
+
+        wanderWaitUntil =
+            Time.time +
+            Random.Range(
+                minIdleTimeBetweenWanders,
+                maxIdleTimeBetweenWanders
+            );
+
+        Debug.Log(
+            "UDO: Spieler ist tot. Kampf beendet."
+        );
+    }
+
+    private void UpdateWanderWithoutPlayer()
+    {
+        if (agent == null ||
+            !agent.isOnNavMesh)
+        {
+            return;
+        }
+
+        if (isWaitingAtWanderPoint)
+        {
+            agent.isStopped = true;
+            agent.velocity = Vector3.zero;
+
+            if (Time.time >= wanderWaitUntil)
+            {
+                isWaitingAtWanderPoint = false;
+
+                SetNewWanderDestination();
+            }
+
+            return;
+        }
+
+        if (!agent.pathPending &&
+            agent.hasPath &&
+            agent.remainingDistance <=
+            agent.stoppingDistance + 0.1f)
+        {
+            agent.ResetPath();
+
+            agent.isStopped = true;
+
+            isWaitingAtWanderPoint = true;
+
+            wanderWaitUntil =
+                Time.time +
+                Random.Range(
+                    minIdleTimeBetweenWanders,
+                    maxIdleTimeBetweenWanders
+                );
+        }
     }
 
     private void UpdateWander(float distanceToPlayer)
@@ -188,7 +300,9 @@ public class SkeletonAI : MonoBehaviour
         if (distanceToPlayer > loseAggroRange)
         {
             currentState = State.Wander;
+
             SetNewWanderDestination();
+
             return;
         }
 
@@ -212,6 +326,13 @@ public class SkeletonAI : MonoBehaviour
 
     private void UpdateAttack(float distanceToPlayer)
     {
+        if (playerHealth != null &&
+            playerHealth.IsDead)
+        {
+            HandlePlayerDeath();
+            return;
+        }
+
         if (!agent.isOnNavMesh)
             return;
 
@@ -227,14 +348,20 @@ public class SkeletonAI : MonoBehaviour
         {
             agent.isStopped = false;
             currentState = State.Chase;
+
             return;
         }
 
         if (Time.time >= nextAttackTime)
         {
+            Debug.Log(
+                $"UDO ATTACK | locked={attackLocked} | distance={distanceToPlayer}"
+            );
+
             attackLocked = true;
 
-            animator.SetTrigger("Attack");
+            if (animator != null)
+                animator.SetTrigger("Attack");
 
             nextAttackTime =
                 Time.time + attackCooldown;
@@ -243,9 +370,18 @@ public class SkeletonAI : MonoBehaviour
 
     public void FinishAttack()
     {
-        Debug.Log("UDO: FinishAttack Event wurde ausgelöst!");
+        Debug.Log(
+            "UDO: FinishAttack Event wurde ausgelöst!"
+        );
 
         attackLocked = false;
+
+        if (playerHealth != null &&
+            playerHealth.IsDead)
+        {
+            HandlePlayerDeath();
+            return;
+        }
 
         if (agent != null &&
             agent.isOnNavMesh)
@@ -254,8 +390,28 @@ public class SkeletonAI : MonoBehaviour
         }
     }
 
+    public void InterruptAttack()
+    {
+        attackLocked = false;
+
+        if (animator != null)
+        {
+            animator.ResetTrigger("Attack");
+        }
+
+        if (agent != null &&
+            agent.isOnNavMesh)
+        {
+            agent.isStopped = true;
+            agent.velocity = Vector3.zero;
+        }
+    }
+
     private void FacePlayer()
     {
+        if (player == null)
+            return;
+
         Vector3 direction =
             player.position -
             transform.position;

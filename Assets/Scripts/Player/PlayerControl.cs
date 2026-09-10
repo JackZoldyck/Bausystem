@@ -7,6 +7,7 @@ public class PlayerController : MonoBehaviour
     public CharacterController controller;
     public Transform cameraPivot;
     public PlayerStats playerStats;
+    public PlayerHealth playerHealth;
     public Animator animator;
     public PlayerZoomCamera playerZoomCamera;
 
@@ -90,7 +91,16 @@ public class PlayerController : MonoBehaviour
         if (controller == null)
             return;
 
+        if (playerHealth != null &&
+            (playerHealth.IsDead ||
+             playerHealth.IsRespawning))
+        {
+            HandleDeadState();
+            return;
+        }
+
         bool firstPerson = true;
+
 
         if (playerZoomCamera != null)
         {
@@ -235,8 +245,6 @@ public class PlayerController : MonoBehaviour
                 }
             }
         }
-
-        previousMoveInput = moveInput;
 
         previousMoveInput = moveInput;
 
@@ -428,6 +436,14 @@ public class PlayerController : MonoBehaviour
 
     public void OnMove(InputValue value)
     {
+        if (playerHealth != null &&
+            (playerHealth.IsDead ||
+             playerHealth.IsRespawning))
+        {
+            moveInput = Vector2.zero;
+            return;
+        }
+
         moveInput =
             value.Get<Vector2>();
     }
@@ -442,6 +458,14 @@ public class PlayerController : MonoBehaviour
 
     public void OnJump(InputValue value)
     {
+        if (playerHealth != null &&
+           (playerHealth.IsDead ||
+            playerHealth.IsRespawning))
+        {
+            moveInput = Vector2.zero;
+            return;
+        }
+
         if (!value.isPressed)
             return;
 
@@ -513,5 +537,26 @@ public class PlayerController : MonoBehaviour
             groundMask,
             QueryTriggerInteraction.Ignore
         );
+    }
+
+    private void HandleDeadState()
+    {
+        moveInput = Vector2.zero;
+
+        isSprinting = false;
+        sprintLockedUntilShiftRelease = false;
+
+        lockedThirdPersonMoveDirection = Vector3.zero;
+        airborneMoveDirection = Vector3.zero;
+        airborneMoveSpeed = 0f;
+
+        velocity = Vector3.zero;
+
+        previousMoveInput = Vector2.zero;
+
+        if (animator != null)
+        {
+            animator.SetFloat("Speed", 0f);
+        }
     }
 }

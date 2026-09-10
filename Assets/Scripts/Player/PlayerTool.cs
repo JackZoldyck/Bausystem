@@ -15,6 +15,7 @@ public class PlayerTool : MonoBehaviour
     public HotbarUI hotbarUI;
     public AxeAnimation axeAnimation;
     public PickaxeAnimation pickaxeAnimation;
+    public SwordAnimation swordAnimation;
     public BuildManager buildManager;
 
     public bool hasAxe = false;
@@ -286,6 +287,42 @@ public class PlayerTool : MonoBehaviour
             {
                 thirdPersonAnimator.SetTrigger(
                     "PickaxeSwing"
+                );
+            }
+        }
+    }
+
+    public void PlaySwordSwing()
+    {
+        if (!hasSword)
+            return;
+
+        bool firstPerson = true;
+
+        if (playerZoomCamera != null)
+            firstPerson = playerZoomCamera.IsFirstPerson;
+
+        if (firstPerson)
+        {
+            Debug.Log("Sword Attack: FP");
+            swordAnimation?.Swing();
+        }
+        else
+        {
+            Debug.Log("Sword Attack: TP");
+
+            if (thirdPersonAnimator != null)
+            {
+                Debug.Log(
+                    $"SwordSwing an Animator: {thirdPersonAnimator.gameObject.name}"
+                );
+
+                thirdPersonAnimator.SetTrigger("SwordSwing");
+            }
+            else
+            {
+                Debug.LogError(
+                    "thirdPersonAnimator ist NICHT zugewiesen!"
                 );
             }
         }

@@ -15,7 +15,7 @@ TagManager:
   - Player
   - 
   - PostProcessing
-  - 
+  - Enemy
   - FirstPersonWeapon
   - PhysicalAmmo
   - Ground
