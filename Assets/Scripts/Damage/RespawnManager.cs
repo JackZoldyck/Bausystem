@@ -43,11 +43,7 @@ public class RespawnManager : MonoBehaviour
         if (characterController != null)
             characterController.enabled = false;
 
-        playerHealth.transform.position =
-            spawnPosition;
-
-        if (characterController != null)
-            characterController.enabled = true;
+        playerHealth.transform.position = spawnPosition;
 
         playerHealth.Respawn();
     }
