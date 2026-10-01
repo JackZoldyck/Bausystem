@@ -11026,7 +11026,7 @@ MonoBehaviour:
   hasAxe: 0
   hasPickaxe: 0
   hasHammer: 0
-  hasSword: 1
+  hasSword: 0
   unlockedAxe: 0
   unlockedPickaxe: 0
   unlockedHammer: 0
