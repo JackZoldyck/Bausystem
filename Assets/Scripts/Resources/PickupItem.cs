@@ -5,29 +5,49 @@ public class PickupItem : MonoBehaviour
     public ItemData item;
     public int amount = 1;
     public string pickupName = "Item";
-    public ResourceGainPopup resourcePopup;
 
     public string GetPromptText()
     {
         return "[E] " + pickupName + " aufsammeln";
     }
 
-    public void Pickup(InventoryGridUI inventoryGrid)
+    public int Pickup(InventoryGridUI inventoryGrid)
     {
         if (item == null || inventoryGrid == null)
-            return;
+            return 0;
 
-        inventoryGrid.AddItem(item, amount);
-        if (resourcePopup != null)
+        int requestedAmount = amount;
+
+        int addedAmount =
+            inventoryGrid.AddItem(
+                item,
+                requestedAmount
+            );
+
+        if (addedAmount <= 0)
+            return 0;
+
+        amount -= addedAmount;
+
+        if (ResourceGainPopup.Instance != null)
         {
-            resourcePopup.ShowResourceGain(item.itemName, amount);
+            ResourceGainPopup.Instance.ShowResourceGain(
+                item.itemName,
+                addedAmount
+            );
         }
 
-        PickupRespawn respawn = GetComponent<PickupRespawn>();
+        if (amount <= 0)
+        {
+            PickupRespawn respawn =
+                GetComponent<PickupRespawn>();
 
-        if (respawn != null)
-            respawn.Collect();
-        else
-            Destroy(gameObject);
+            if (respawn != null)
+                respawn.Collect();
+            else
+                Destroy(gameObject);
+        }
+
+        return addedAmount;
     }
 }

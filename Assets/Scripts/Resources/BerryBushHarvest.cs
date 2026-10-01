@@ -10,7 +10,6 @@ public class BerryBushHarvest : MonoBehaviour
 
     [Header("References")]
     public GameObject berriesObject;
-    public ResourceGainPopup resourcePopup;
 
     private bool hasBerries = true;
 
@@ -22,28 +21,39 @@ public class BerryBushHarvest : MonoBehaviour
         return "[E] Beeren pflücken";
     }
 
-    public void Harvest(InventoryGridUI inventoryGrid)
+    public bool Harvest(InventoryGridUI inventoryGrid)
     {
         if (!hasBerries)
-            return;
+            return true;
 
         if (inventoryGrid == null || berryItem == null)
-            return;
+            return false;
 
-        inventoryGrid.AddItem(
-            berryItem,
-            berryAmount
-        );
-
-        if (resourcePopup != null)
-        {
-            resourcePopup.ShowResourceGain(
-                berryItem.itemName,
+        int addedAmount =
+            inventoryGrid.AddItem(
+                berryItem,
                 berryAmount
+            );
+
+        if (addedAmount <= 0)
+            return false;
+
+        if (ResourceGainPopup.Instance != null)
+        {
+            ResourceGainPopup.Instance.ShowResourceGain(
+                berryItem.itemName,
+                addedAmount
             );
         }
 
-        StartCoroutine(RespawnRoutine());
+        if (addedAmount < berryAmount)
+            return false;
+
+        StartCoroutine(
+            RespawnRoutine()
+        );
+
+        return true;
     }
 
     private IEnumerator RespawnRoutine()

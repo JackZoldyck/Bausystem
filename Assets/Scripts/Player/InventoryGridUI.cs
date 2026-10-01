@@ -42,9 +42,6 @@ public class InventoryGridUI : MonoBehaviour
 
             Instance = this;
             CreateSlots();
-
-        Instance = this;
-        CreateSlots();
     }
 
     void CreateSlots()
@@ -72,24 +69,27 @@ public class InventoryGridUI : MonoBehaviour
         }
     }
 
-    public void AddItem(ItemData item, int amount)
+    public int AddItem(ItemData item, int amount)
     {
         CreateSlots();
 
-        if (item == null)
-        {
-            return;
-        }
+        if (item == null || amount <= 0)
+            return 0;
 
-        // Vorhandene Stacks auffüllen
+        int originalAmount = amount;
+
         for (int i = 0; i < slotData.Count; i++)
         {
             if (!slotData[i].IsEmpty()
                 && slotData[i].item == item
                 && slotData[i].amount < item.maxStackSize)
             {
-                int space = item.maxStackSize - slotData[i].amount;
-                int addAmount = Mathf.Min(space, amount);
+                int space =
+                    item.maxStackSize -
+                    slotData[i].amount;
+
+                int addAmount =
+                    Mathf.Min(space, amount);
 
                 slotData[i].amount += addAmount;
                 amount -= addAmount;
@@ -97,17 +97,20 @@ public class InventoryGridUI : MonoBehaviour
                 if (amount <= 0)
                 {
                     RefreshUI();
-                    return;
+                    return originalAmount;
                 }
             }
         }
 
-        // Neue Slots belegen
         for (int i = 0; i < slotData.Count; i++)
         {
             if (slotData[i].IsEmpty())
             {
-                int addAmount = Mathf.Min(amount, item.maxStackSize);
+                int addAmount =
+                    Mathf.Min(
+                        amount,
+                        item.maxStackSize
+                    );
 
                 slotData[i].item = item;
                 slotData[i].amount = addAmount;
@@ -117,11 +120,14 @@ public class InventoryGridUI : MonoBehaviour
                 if (amount <= 0)
                 {
                     RefreshUI();
-                    return;
+                    return originalAmount;
                 }
             }
         }
 
+        RefreshUI();
+
+        return originalAmount - amount;
     }
 
     public void SwapSlots(int fromIndex, int toIndex)

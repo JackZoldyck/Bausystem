@@ -11,6 +11,7 @@ public class EnemyHealth : MonoBehaviour, IDamageable
     public NavMeshAgent agent;
     public SkeletonAI enemyAI;
     public EnemyLoot enemyLoot;
+    public EnemySpawner enemySpawner;
 
     private float currentHealth;
     private bool isDead;
@@ -88,14 +89,14 @@ public class EnemyHealth : MonoBehaviour, IDamageable
             animator.SetTrigger("Death");
         }
 
-        if (animator != null)
-        {
-            animator.SetTrigger("Death");
-        }
-
         if (enemyLoot != null)
         {
             enemyLoot.DropLoot();
+        }
+
+        if (enemySpawner != null)
+        {
+            enemySpawner.EnemyDied(gameObject);
         }
     }
 }

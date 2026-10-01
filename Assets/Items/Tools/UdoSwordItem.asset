@@ -10,13 +10,13 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 93e5fa1d70288c642b993142692f5ff0, type: 3}
-  m_Name: MushroomItem
+  m_Name: UdoSwordItem
   m_EditorClassIdentifier: Assembly-CSharp::ItemData
-  itemName: Pilz
-  icon: {fileID: 21300000, guid: f9a55426bb114b24280760f50ffc6734, type: 3}
-  itemType: 2
-  toolType: 0
-  maxStackSize: 64
-  healthBonus: 15
-  staminaBonus: 15
+  itemName: "Skeletts\xE4bel"
+  icon: {fileID: 21300000, guid: d78149d383e8f8c4a81a8fa6b47d4caa, type: 3}
+  itemType: 1
+  toolType: 4
+  maxStackSize: 1
+  healthBonus: 0
+  staminaBonus: 0
   foodDuration: 300
