@@ -14,4 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ItemData
   itemName: Holz
   icon: {fileID: 21300000, guid: e943e3636c627c04ab04a4c5c52a0d7b, type: 3}
-  maxStackSize: 64
+  itemType: 0
+  toolType: 0
+  maxStackSize: 12
+  healthBonus: 0
+  staminaBonus: 0
+  foodDuration: 300

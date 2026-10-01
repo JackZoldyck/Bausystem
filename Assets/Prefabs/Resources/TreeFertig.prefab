@@ -13463,7 +13463,11 @@ MonoBehaviour:
   health: 3
   respawnTime: 60
   stumpObject: {fileID: 970117438498364128}
-  inventoryGridUI: {fileID: 0}
+  resourceDropPrefab: {fileID: 2823424923287062543, guid: e418e61284fc9c347b584b04baff5ac3,
+    type: 3}
+  dropRadius: 1.5
+  dropHeight: 1
+  dropForce: 0
 --- !u!136 &7372692549924797170
 CapsuleCollider:
   m_ObjectHideFlags: 0

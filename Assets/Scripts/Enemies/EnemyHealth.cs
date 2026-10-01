@@ -10,6 +10,8 @@ public class EnemyHealth : MonoBehaviour, IDamageable
     public Animator animator;
     public NavMeshAgent agent;
     public SkeletonAI enemyAI;
+    public EnemyLoot enemyLoot;
+    public EnemySpawner enemySpawner;
 
     private float currentHealth;
     private bool isDead;
@@ -26,6 +28,9 @@ public class EnemyHealth : MonoBehaviour, IDamageable
 
         if (enemyAI == null)
             enemyAI = GetComponent<SkeletonAI>();
+
+        if (enemyLoot == null)
+            enemyLoot = GetComponent<EnemyLoot>();
     }
 
     public void TakeDamage(DamageInfo damageInfo)
@@ -82,6 +87,16 @@ public class EnemyHealth : MonoBehaviour, IDamageable
         if (animator != null)
         {
             animator.SetTrigger("Death");
+        }
+
+        if (enemyLoot != null)
+        {
+            enemyLoot.DropLoot();
+        }
+
+        if (enemySpawner != null)
+        {
+            enemySpawner.EnemyDied(gameObject);
         }
     }
 }

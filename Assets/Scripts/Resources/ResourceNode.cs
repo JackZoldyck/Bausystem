@@ -25,19 +25,18 @@ public class ResourceNode : MonoBehaviour
     public float respawnTime = 60f;
 
     public GameObject stumpObject;
-    public InventoryGridUI inventoryGridUI;
+
+    [Header("Physical Drops")]
+    public GameObject resourceDropPrefab;
+    public float dropRadius = 0.8f;
+    public float dropHeight = 0.5f;
+    public float dropForce = 2f;
 
     private int maxHealth;
     private Renderer[] renderers;
     private Collider[] colliders;
     private TreeHitFeedback feedback;
     private bool isDepleted = false;
-
-    void Awake()
-    {
-        if (inventoryGridUI == null)
-            inventoryGridUI = InventoryGridUI.Instance;
-    }
 
     void Start()
     {
@@ -50,9 +49,6 @@ public class ResourceNode : MonoBehaviour
 
         if (stumpObject != null)
             stumpObject.SetActive(false);
-
-        if (inventoryGridUI == null)
-            inventoryGridUI = InventoryGridUI.Instance;
     }
 
     public void Harvest(
@@ -65,10 +61,8 @@ public class ResourceNode : MonoBehaviour
         if (isDepleted)
             return;
 
-        // Schaden verursachen
         health -= damage;
 
-        // Trefferfeedback bei jedem erfolgreichen Treffer
         if (feedback != null)
         {
             feedback.PlayHitFeedback(
@@ -77,14 +71,11 @@ public class ResourceNode : MonoBehaviour
             );
         }
 
-        // Ressource lebt noch
         if (health > 0)
             return;
 
-        // Ressource wurde vollständig abgebaut
         isDepleted = true;
 
-        // Tatsächlichen Ertrag anhand der Perspektive berechnen
         int finalResourceAmount =
             Mathf.Max(
                 1,
@@ -93,69 +84,71 @@ public class ResourceNode : MonoBehaviour
                 )
             );
 
-        // Altes PlayerInventory aktualisieren
-        if (inventory != null)
-        {
-            if (resourceType == ResourceType.Wood)
-            {
-                inventory.wood += finalResourceAmount;
-            }
+        SpawnResourceDrops(
+            finalResourceAmount
+        );
 
-            if (resourceType == ResourceType.Stone)
-            {
-                inventory.stone += finalResourceAmount;
-            }
-        }
+        StartCoroutine(
+            RespawnRoutine()
+        );
+    }
 
-        // Aktuelles InventoryGrid finden
-        InventoryGridUI currentInventory =
-            InventoryGridUI.Instance;
-
-        if (currentInventory == null)
-        {
-            currentInventory =
-                FindAnyObjectByType<InventoryGridUI>(
-                    FindObjectsInactive.Include
-                );
-        }
-
-        // Ressource ins sichtbare Inventar legen
-        if (currentInventory != null &&
-            resourceItem != null)
-        {
-            currentInventory.AddItem(
-                resourceItem,
-                finalResourceAmount
-            );
-        }
-        else
+    private void SpawnResourceDrops(
+        int amount
+    )
+    {
+        if (resourceDropPrefab == null)
         {
             Debug.LogError(
-                $"ResourceNode: Ressource konnte nicht ins Inventar gelegt werden. " +
-                $"Inventory: {currentInventory}, ResourceItem: {resourceItem}",
+                "ResourceNode: Resource Drop Prefab fehlt!",
                 this
             );
+
+            return;
         }
 
-        // Popup anzeigen
-        ResourceGainPopup popup =
-            FindFirstObjectByType<ResourceGainPopup>();
-
-        if (popup != null)
+        for (int i = 0; i < amount; i++)
         {
-            string resourceName =
-                resourceType == ResourceType.Wood
-                    ? "Holz"
-                    : "Stein";
+            Vector2 randomCircle =
+                Random.insideUnitCircle *
+                dropRadius;
 
-            popup.ShowResourceGain(
-                resourceName,
-                finalResourceAmount
-            );
+            Vector3 spawnPosition =
+                transform.position +
+                new Vector3(
+                    randomCircle.x,
+                    dropHeight,
+                    randomCircle.y
+                );
+
+            Quaternion spawnRotation =
+                Random.rotation;
+
+            GameObject drop =
+                Instantiate(
+                    resourceDropPrefab,
+                    spawnPosition,
+                    spawnRotation
+                );
+
+            PickupItem pickup =
+                drop.GetComponent<PickupItem>();
+
+            if (pickup != null)
+            {
+                pickup.item = resourceItem;
+                pickup.amount = 1;
+            }
+
+            Rigidbody rb =
+                drop.GetComponent<Rigidbody>();
+
+            if (rb != null)
+            {
+                rb.linearVelocity = Vector3.zero;
+                rb.angularVelocity = Vector3.zero;
+            }
         }
-
-        // Respawn starten
-        StartCoroutine(RespawnRoutine());
     }
 
     IEnumerator RespawnRoutine()
@@ -165,7 +158,9 @@ public class ResourceNode : MonoBehaviour
         if (stumpObject != null)
             stumpObject.SetActive(true);
 
-        yield return new WaitForSeconds(respawnTime);
+        yield return new WaitForSeconds(
+            respawnTime
+        );
 
         health = maxHealth;
         isDepleted = false;

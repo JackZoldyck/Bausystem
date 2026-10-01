@@ -89,6 +89,12 @@ public class WorldSpawner : MonoBehaviour
     public float minimumBerryBushDistance = 1.5f;
     public int berryClusterPlacementAttempts = 30;
 
+    [Header("Enemy Generation")]
+    public GameObject udoSpawnerPrefab;
+    public int minUdos = 2;
+    public int maxUdos = 4;
+    public float udoYOffset = 0f;
+
     [Header("Terrain Grass")]
     [Min(0)]
     public int grassDetailLayer1 = 0;
@@ -174,6 +180,7 @@ public class WorldSpawner : MonoBehaviour
         SpawnMushrooms();
         SpawnBerryBushClusters();
         GenerateTerrainGrass();
+        SpawnUdos();
     }
 
     private void SpawnTrees()
@@ -1161,6 +1168,48 @@ public class WorldSpawner : MonoBehaviour
             x,
             0f,
             z
+        );
+    }
+
+    private void SpawnUdos()
+    {
+        if (udoSpawnerPrefab == null)
+        {
+            Debug.LogWarning(
+                "WorldSpawner: Kein Udo Spawner Prefab zugewiesen.",
+                this
+            );
+
+            return;
+        }
+
+        int amount =
+            Random.Range(
+                minUdos,
+                maxUdos + 1
+            );
+
+        for (int i = 0; i < amount; i++)
+        {
+            Vector3 position =
+                GetRandomPosition();
+
+            position =
+                PlaceOnTerrain(
+                    position,
+                    udoYOffset
+                );
+
+            Instantiate(
+                udoSpawnerPrefab,
+                position,
+                Quaternion.identity
+            );
+        }
+
+        Debug.Log(
+            $"WorldSpawner: {amount} Udos erzeugt.",
+            this
         );
     }
 

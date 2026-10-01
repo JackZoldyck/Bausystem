@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class ResourceGainPopup : MonoBehaviour
 {
+    public static ResourceGainPopup Instance { get; private set; }
+
     public RectTransform popupRect;
     public TMP_Text popupText;
 
@@ -17,6 +19,8 @@ public class ResourceGainPopup : MonoBehaviour
 
     void Awake()
     {
+        Instance = this;
+
         if (popupRect == null)
             popupRect = GetComponent<RectTransform>();
 
@@ -29,41 +33,73 @@ public class ResourceGainPopup : MonoBehaviour
         popupRect.anchoredPosition = hiddenPosition;
     }
 
-    public void ShowResourceGain(string resourceName, int amount)
+    public void ShowResourceGain(
+        string resourceName,
+        int amount
+    )
     {
         if (currentRoutine != null)
             StopCoroutine(currentRoutine);
 
-        currentRoutine = StartCoroutine(ShowRoutine(resourceName, amount));
+        currentRoutine =
+            StartCoroutine(
+                ShowRoutine(
+                    resourceName,
+                    amount
+                )
+            );
     }
 
-    IEnumerator ShowRoutine(string resourceName, int amount)
+    IEnumerator ShowRoutine(
+        string resourceName,
+        int amount
+    )
     {
-        popupText.text = "+" + amount + " " + resourceName;
+        popupText.text =
+            "+" + amount + " " + resourceName;
 
         float t = 0f;
 
         while (t < 1f)
         {
             t += Time.deltaTime * slideSpeed;
-            popupRect.anchoredPosition = Vector2.Lerp(hiddenPosition, visiblePosition, t);
+
+            popupRect.anchoredPosition =
+                Vector2.Lerp(
+                    hiddenPosition,
+                    visiblePosition,
+                    t
+                );
+
             yield return null;
         }
 
-        popupRect.anchoredPosition = visiblePosition;
+        popupRect.anchoredPosition =
+            visiblePosition;
 
-        yield return new WaitForSeconds(showDuration);
+        yield return new WaitForSeconds(
+            showDuration
+        );
 
         t = 0f;
 
         while (t < 1f)
         {
             t += Time.deltaTime * slideSpeed;
-            popupRect.anchoredPosition = Vector2.Lerp(visiblePosition, hiddenPosition, t);
+
+            popupRect.anchoredPosition =
+                Vector2.Lerp(
+                    visiblePosition,
+                    hiddenPosition,
+                    t
+                );
+
             yield return null;
         }
 
-        popupRect.anchoredPosition = hiddenPosition;
+        popupRect.anchoredPosition =
+            hiddenPosition;
+
         currentRoutine = null;
     }
 }

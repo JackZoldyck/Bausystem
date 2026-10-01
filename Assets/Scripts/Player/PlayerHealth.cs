@@ -5,6 +5,7 @@ public class PlayerHealth : MonoBehaviour, IDamageable
     [Header("References")]
     public PlayerStats playerStats;
     public Animator animator;
+    public CharacterController characterController;
 
     public bool IsDead => isDead;
     public DeathScreenUI deathScreenUI;
@@ -136,6 +137,11 @@ public class PlayerHealth : MonoBehaviour, IDamageable
     public void FinishRespawn()
     {
         isRespawning = false;
+
+        if (characterController != null)
+        {
+            characterController.enabled = true;
+        }
 
         Debug.Log("PLAYER: Respawn abgeschlossen");
     }

@@ -1,6 +1,6 @@
 using UnityEngine;
-public class RespawnManager : MonoBehaviour
 
+public class RespawnManager : MonoBehaviour
 {
     [Header("References")]
     public PlayerHealth playerHealth;
@@ -41,18 +41,23 @@ public class RespawnManager : MonoBehaviour
             GetGroundedSpawnPosition(spawnPosition);
 
         if (characterController != null)
+        {
             characterController.enabled = false;
+        }
 
-        playerHealth.transform.position =
-            spawnPosition;
+        playerHealth.transform.position = spawnPosition;
 
         if (characterController != null)
+        {
             characterController.enabled = true;
+        }
 
         playerHealth.Respawn();
     }
 
-    private Vector3 GetGroundedSpawnPosition(Vector3 targetPosition)
+    private Vector3 GetGroundedSpawnPosition(
+        Vector3 targetPosition
+    )
     {
         Terrain terrain = Terrain.activeTerrain;
 
