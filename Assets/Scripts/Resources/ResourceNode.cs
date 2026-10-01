@@ -156,7 +156,31 @@ public class ResourceNode : MonoBehaviour
         SetResourceActive(false);
 
         if (stumpObject != null)
+        {
             stumpObject.SetActive(true);
+
+            Transform current =
+                stumpObject.transform;
+
+            while (current != null)
+            {
+                Debug.Log(
+                    $"PARENT CHECK: {current.name} | " +
+                    $"activeSelf: {current.gameObject.activeSelf} | " +
+                    $"activeInHierarchy: {current.gameObject.activeInHierarchy}",
+                    current.gameObject
+                );
+
+                current = current.parent;
+            }
+        }
+        else
+        {
+            Debug.LogError(
+                "ResourceNode: stumpObject ist NULL!",
+                this
+            );
+        }
 
         yield return new WaitForSeconds(
             respawnTime
@@ -176,8 +200,8 @@ public class ResourceNode : MonoBehaviour
         foreach (Renderer renderer in renderers)
         {
             if (stumpObject != null &&
-                renderer.transform.IsChildOf(
-                    stumpObject.transform))
+                (renderer.transform == stumpObject.transform ||
+                 renderer.transform.IsChildOf(stumpObject.transform)))
             {
                 continue;
             }
@@ -188,8 +212,8 @@ public class ResourceNode : MonoBehaviour
         foreach (Collider collider in colliders)
         {
             if (stumpObject != null &&
-                collider.transform.IsChildOf(
-                    stumpObject.transform))
+                (collider.transform == stumpObject.transform ||
+                 collider.transform.IsChildOf(stumpObject.transform)))
             {
                 continue;
             }

@@ -11308,8 +11308,8 @@ MonoBehaviour:
   pickaxeAnimation: {fileID: 511718008}
   swordAnimation: {fileID: 511718010}
   buildManager: {fileID: 1623036772}
-  hasAxe: 1
-  hasPickaxe: 0
+  hasAxe: 0
+  hasPickaxe: 1
   hasHammer: 0
   hasSword: 0
   unlockedAxe: 0
