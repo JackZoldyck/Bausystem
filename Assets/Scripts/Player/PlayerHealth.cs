@@ -79,6 +79,7 @@ public class PlayerHealth : MonoBehaviour, IDamageable
 
         isDead = true;
 
+
         Debug.Log("Player ist gestorben.");
 
         if (animator != null)

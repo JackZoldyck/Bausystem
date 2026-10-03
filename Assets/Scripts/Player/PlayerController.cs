@@ -550,9 +550,41 @@ public class PlayerController : MonoBehaviour
         airborneMoveDirection = Vector3.zero;
         airborneMoveSpeed = 0f;
 
-        velocity = Vector3.zero;
-
         previousMoveInput = Vector2.zero;
+
+        if (playerHealth != null &&
+            playerHealth.IsDead &&
+            controller != null &&
+            controller.enabled)
+        {
+            if (controller.isGrounded &&
+                velocity.y < 0f)
+            {
+                velocity.y = -2f;
+            }
+            else
+            {
+                velocity.y +=
+                    gravity * Time.deltaTime;
+            }
+
+            CollisionFlags collisionFlags =
+                controller.Move(
+                    Vector3.up *
+                    velocity.y *
+                    Time.deltaTime
+                );
+
+            if ((collisionFlags &
+                 CollisionFlags.Below) != 0)
+            {
+                velocity.y = -2f;
+            }
+        }
+        else
+        {
+            velocity = Vector3.zero;
+        }
 
         if (animator != null)
         {

@@ -8,6 +8,7 @@ public class DeathScreenUI : MonoBehaviour
     public CanvasGroup canvasGroup;
     public GameObject respawnHint;
     public RespawnManager respawnManager;
+    public PlayerGravestoneSpawner gravestoneSpawner;
 
     [Header("Timing")]
     public float fadeDelay = 0.5f;
@@ -94,6 +95,17 @@ public class DeathScreenUI : MonoBehaviour
         if (canvasGroup != null)
         {
             canvasGroup.alpha = 1f;
+        }
+
+        if (gravestoneSpawner != null)
+        {
+            gravestoneSpawner.SpawnGravestone();
+        }
+        else
+        {
+            Debug.LogError(
+                "DeathScreenUI: GravestoneSpawner fehlt!"
+            );
         }
     }
 
