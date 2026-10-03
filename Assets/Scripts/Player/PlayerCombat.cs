@@ -15,11 +15,9 @@ public class PlayerCombat : MonoBehaviour
     [Header("Attack")]
     public float attackCooldown = 0.6f;
     public float hitDelay = 0.18f;
-
-    [Header("Sword Damage")]
-    public float swordDamage = 10f;
     public float attackRadius = 1.2f;
     public LayerMask damageMask;
+
 
     private float nextAttackTime;
 
@@ -173,7 +171,7 @@ public class PlayerCombat : MonoBehaviour
 
             DamageInfo damageInfo =
                 new DamageInfo(
-                    swordDamage,
+                    playerTool.swordDamage,
                     DamageType.Physical,
                     gameObject
                 );

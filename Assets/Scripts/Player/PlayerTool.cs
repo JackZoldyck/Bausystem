@@ -6,11 +6,15 @@ public class PlayerTool : MonoBehaviour
     public GameObject pickaxeObjectFP;
     public GameObject hammerObjectFP;
     public GameObject swordObjectFP;
+    public GameObject udoSwordObjectFP;
 
     public GameObject axeObjectTP;
     public GameObject pickaxeObjectTP;
     public GameObject hammerObjectTP;
     public GameObject swordObjectTP;
+    public GameObject udoSwordObjectTP;
+
+    public ItemData udoSwordItem;
 
     public HotbarUI hotbarUI;
     public AxeAnimation axeAnimation;
@@ -22,6 +26,7 @@ public class PlayerTool : MonoBehaviour
     public bool hasPickaxe = false;
     public bool hasHammer = false;
     public bool hasSword = false;
+    private bool hasUdoSword = false;
 
     public bool unlockedAxe = false;
     public bool unlockedPickaxe = false;
@@ -30,7 +35,7 @@ public class PlayerTool : MonoBehaviour
 
     public int axeDamage = 1;
     public int pickaxeDamage = 1;
-    public int swordDamage = 10;
+    public float swordDamage = 10f;
 
     private int selectedHotbarIndex = -1;
 
@@ -115,6 +120,8 @@ public class PlayerTool : MonoBehaviour
 
             case ToolType.Sword:
                 hasSword = true;
+                hasUdoSword = item == udoSwordItem;
+                swordDamage = item.toolDamage;
                 break;
         }
 
@@ -127,6 +134,7 @@ public class PlayerTool : MonoBehaviour
         hasPickaxe = false;
         hasHammer = false;
         hasSword = false;
+        hasUdoSword = false;
 
         if (buildManager != null)
         {
@@ -175,7 +183,18 @@ public class PlayerTool : MonoBehaviour
         if (swordObjectFP != null)
         {
             swordObjectFP.SetActive(
-                firstPerson && hasSword
+                firstPerson &&
+                hasSword &&
+                !hasUdoSword
+            );
+        }
+
+        if (udoSwordObjectFP != null)
+        {
+            udoSwordObjectFP.SetActive(
+                firstPerson &&
+                hasSword &&
+                hasUdoSword
             );
         }
 
@@ -203,7 +222,18 @@ public class PlayerTool : MonoBehaviour
         if (swordObjectTP != null)
         {
             swordObjectTP.SetActive(
-                !firstPerson && hasSword
+                !firstPerson &&
+                hasSword &&
+                !hasUdoSword
+            );
+        }
+
+        if (udoSwordObjectTP != null)
+        {
+            udoSwordObjectTP.SetActive(
+                !firstPerson &&
+                hasSword &&
+                hasUdoSword
             );
         }
     }

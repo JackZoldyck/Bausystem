@@ -20,3 +20,4 @@ MonoBehaviour:
   healthBonus: 0
   staminaBonus: 0
   foodDuration: 300
+  toolDamage: 15

@@ -31,4 +31,8 @@ public class ItemData : ScriptableObject
     public float healthBonus;
     public float staminaBonus;
     public float foodDuration = 300f;
+
+    [Header("Tool")]
+    public int toolDamage = 1;
+
 }

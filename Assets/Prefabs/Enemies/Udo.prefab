@@ -782,7 +782,7 @@ MonoBehaviour:
   boneItem: {fileID: 11400000, guid: 9b47e6df3bed77c42ab7dbaa59f11852, type: 2}
   boneAmount: 3
   udoSwordItem: {fileID: 11400000, guid: fad8e23fdd00d4147991cc3c04bd8d67, type: 2}
-  swordDropChance: 1
+  swordDropChance: 0.05
   lootContainerPrefab: {fileID: 4533834721967513741, guid: 6375ec5b4519e574598545c5a99b37d3,
     type: 3}
   bonePileVisualPrefab: {fileID: 3065599113543064074, guid: 5dbefaad7d0ec4249b0eff18a9254fee,
